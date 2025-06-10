@@ -1,0 +1,5 @@
+# Top-level configuration
+name = "portfolio-site"
+main = "src/app.html"
+compatibility_date = "2025-06-10"
+workers_dev = true
