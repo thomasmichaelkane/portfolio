@@ -1,5 +1,5 @@
 # Top-level configuration
 name = "portfolio-site"
-main = "src/app.html"
+main = "src/lib/index.ts"
 compatibility_date = "2025-06-10"
 workers_dev = true
