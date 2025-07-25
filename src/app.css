@@ -1,5 +1,31 @@
 @import 'tailwindcss';
 
-* {
-  font-family: 'Share Tech Mono', monospace;
+@theme {
+
+  /* colors */
+  --color-primary: #ff6b6bff; 
+  --color-secondary: #4ecdc4ff;
+  --color-tertiary: #6c6061ff;
+  --color-quaternary: #64403eff;
+  --color-lbackground: #f7f0f0ff;
+  --color-project: #e6e3dc;
+  --color-dtext: #201D1D;
+  --color-ltext: #f7f0f0ff;
+  --color-htext: #201D1D;
+  --color-cborder: #24292e;
+
+  /* brand colours */
+  --color-docker: #1D63ED;
+  --color-github: #24292e;
+
+  /* fonts */
+  --font-serif: 'Lora', serif; 
+  --font-mono: 'Share Tech Mono', monospace; 
 }
+
+/* @theme { */
+  /* --color-primary: #c37397;
+  --color-secondary: #c5afc3;
+  --color-tertiary: #ae9290;
+  --color-quaternary: #ff9290;
+  --color-lbackground: #fffcf4; */

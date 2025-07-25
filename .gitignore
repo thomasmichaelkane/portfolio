@@ -21,3 +21,8 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# non functional
+/src/lib/components/Publication.svelte.txt
+/src/lib/components/Publications.svelte.txt
+/src/lib/data/publications.json
