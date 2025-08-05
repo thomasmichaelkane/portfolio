@@ -27,3 +27,5 @@ vite.config.ts.timestamp-*
 /src/lib/components/Publications.svelte.txt
 /src/lib/data/publications.json
 /src/lib/data/other_projects.json
+
+/static/project-images/ventr.png

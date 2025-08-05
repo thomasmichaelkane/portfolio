@@ -11,7 +11,7 @@
   export let buttonType: string | null = null;
   export let buttonLink: string;
 
-  $: imageSrc = `src/lib/assets/project-images/${imageName}`;
+  $: imageSrc = `/project-images/${imageName}`;
 </script>
 
 <div class="bg-lbackground bg-opacity-10 border-2 border-cborder backdrop-blur-sm overflow-hidden hover:bg-opacity-20 transition-all duration-300 transform hover:scale-105 shadow-lg">
