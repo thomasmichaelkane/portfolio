@@ -3,11 +3,11 @@
 @theme {
 
   /* colors */
-  --color-primary: #ff6b6bff; 
-  --color-secondary: #4ecdc4ff;
-  --color-tertiary: #6c6061ff;
-  --color-quaternary: #64403eff;
-  --color-lbackground: #f7f0f0ff;
+  --color-primary: #ff6b6b; 
+  --color-secondary: #43B3AB;
+  --color-tertiary: #7C8E7C;
+  --color-quaternary: #64403e;
+  --color-lbackground: #f7f0f0;
   --color-project: #e6e3dc;
   --color-dtext: #201D1D;
   --color-ltext: #f7f0f0ff;
@@ -17,6 +17,7 @@
   /* brand colours */
   --color-docker: #1D63ED;
   --color-github: #24292e;
+  --color-site: #354F52;
 
   /* fonts */
   --font-serif: 'Lora', serif; 

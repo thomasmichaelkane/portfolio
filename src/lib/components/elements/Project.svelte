@@ -48,7 +48,7 @@
           <LinkButton
             url="{buttonLink}"
             text="Visit Site"
-            color="secondary"
+            color="site"
             hcolor="primary"
             iconClass="fas fa-link"
           />

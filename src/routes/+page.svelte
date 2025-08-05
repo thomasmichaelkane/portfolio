@@ -150,7 +150,7 @@
            
           <div class="relative inline-block mr-2">
             <button 
-              on:click={() => downloadFile(`/src/lib/assets/files/${info.cvFilename}`)}
+              on:click={() => downloadFile(`${info.cvFilename}`)}
               class="cursor-pointer rounded-lg bg-secondary px-8 py-4 text-2xl font-semibold text-ltext shadow-lg transition-all duration-300 hover:scale-105 hover:opacity-80 hover:shadow-xl"
             >
               Download my CV

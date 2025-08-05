@@ -26,3 +26,4 @@ vite.config.ts.timestamp-*
 /src/lib/components/Publication.svelte.txt
 /src/lib/components/Publications.svelte.txt
 /src/lib/data/publications.json
+/src/lib/data/other_projects.json

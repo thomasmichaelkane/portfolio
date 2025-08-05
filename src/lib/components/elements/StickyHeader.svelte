@@ -14,7 +14,7 @@
     <h2 class="text-ltext text-5xl">{sectionName}</h2>
     {#if sectionLink}
       <div class="hidden md:flex space-x-8 text-3xl">
-        <button on:click={() => smoothScrollTo(sectionLink, 1500)} class="text-ltext hover:text-htext transition-colors cursor-pointer">
+        <button on:click={() => smoothScrollTo(sectionLink, 1500)} class="text-ltext cursor-pointer hover:underline transition-all duration-300 ease-in-out">
           {linkText}
           <i class="text-2xl fa fa-arrow-{arrowDirection}"></i>
         </button>
