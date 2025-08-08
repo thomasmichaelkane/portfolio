@@ -61,12 +61,12 @@
         <div class="space-y-8 pl-5">
 
           <div class="p-3">
-            <h3 class="mb-10 text-5xl font-bold">Hi there!</h3>
+            <h3 class="mb-10 text-5xl font-bold">Hello!</h3>
             <p class="mb-6 text-2xl leading-relaxed">
               {info.myBio}
             </p>
           </div>
-          <div class="p-3 text-xl space-y-1 font-mono">
+          <div class="p-3 text-2xl space-y-3 font-mono">
             <p>email: {info.myEmail}</p>
             <p>location: London</p>
           </div>
@@ -78,7 +78,7 @@
             <Tech />
           </div>
           <div class="p-3">
-            <h4 class="mb-4 text-2xl font-semibold">aws journey</h4>
+            <h4 class="mb-8 text-2xl font-semibold">aws journey</h4>
             <Certifications />
           </div>
         </div>

@@ -22,6 +22,16 @@
     },
     {
       "id": "project-3",
+      "name": "Ventr",
+      "description": "Venture capital investors pairwise ranking potential companies to see company wide preferences using an ELO ranking system",
+      "imageName": "ventr.png",
+      "techStack": ["Python", "FastAPI", "PyDantic", "SvelteKit", "TailwindCSS"],
+      "githubUrl": "https://github.com/thomasmichaelkane/ventr",
+      "buttonType": null,
+      "buttonLink": "#"
+    },
+    {
+      "id": "project-4",
       "name": "Portfolio 2.0",
       "description": "This website! - My second portfolio site built for fun using Sveltekit.",
       "imageName": "tomkane.png",
