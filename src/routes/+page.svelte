@@ -31,7 +31,7 @@
 <ColorTrigger/>
 
 <!-- Page -->
-<div class="min-w-[800px] text-dtext font-serif">
+<div class="min-w-[800px] text-dtext font-serif ">
 
   <!-- Home -->
   <section class="h-screen bg-lbackground" id="home">
@@ -125,9 +125,9 @@
       <div class="flex flex-1 items-center justify-center">
         <div class="mx-auto max-w-2xl text-center">
           <h1 class="mb-8 text-4xl font-bold leading-tight md:text-6xl">
-            I'm looking for new 
-            <span class="text-primary">opportunities</span>, 
-            please get in touch!
+            If you're 
+            <span class="text-primary">interested</span>, 
+            please get in touch.
           </h1>
           
           <div class="relative inline-block mr-2">
