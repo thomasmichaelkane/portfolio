@@ -12,7 +12,13 @@
 
   // Children are drawn over the background; any marked `data-obstacle` are
   // fixed shapes the apps bounce off (e.g. a corner link)
-  let { apps, children }: { apps: AppInfo[]; children?: Snippet } = $props();
+  // dotsInstant: show the background straight away (arriving from the home page,
+  // which has already faded the same dots in) instead of fading it in
+  let {
+    apps,
+    children,
+    dotsInstant = false
+  }: { apps: AppInfo[]; children?: Snippet; dotsInstant?: boolean } = $props();
 
   // Tuning: speeds in px/s, times in seconds
   const MIN_SPEED = 12;
@@ -25,6 +31,9 @@
   const OBSTACLE_SPACING = 16; // minimum clear space around obstacles
   const APP_LIGHT_RADIUS = 240; // how far an app's glow and ripples reach
   const MOUSE_LIGHT_RADIUS = 130;
+  const APPEAR_MIN_DELAY = 250; // ms before the first app can appear
+  const APPEAR_SPREAD = 900; // apps appear at random times within this window
+  const APPEAR_RATE = 3; // how quickly each app fades in once it starts
 
   interface Body {
     x: number;
@@ -36,6 +45,8 @@
     r: number; // radius covering the logo and name, used for initial placement
     phase: number;
     calm: number; // 0 = floating freely, 1 = fully settled
+    appear: number; // 0 = hidden, 1 = fully shown
+    appearAt: number; // ms after mount when this app starts to appear
     rgb: [number, number, number];
   }
 
@@ -51,6 +62,8 @@
       x: 0, y: 0, vx: 0, vy: 0, w: 0, h: 0, r: 0,
       phase: Math.random() * Math.PI * 2,
       calm: 0,
+      appear: 0,
+      appearAt: APPEAR_MIN_DELAY + Math.random() * APPEAR_SPREAD,
       rgb: hexToRgb(apps[i].accent)
     }));
 
@@ -103,7 +116,9 @@
     const render = (t: number) => {
       bodies.forEach((b, i) => {
         const tilt = Math.sin(t * 0.7 + b.phase) * TILT_DEG * (1 - b.calm);
-        items[i].style.transform = `translate3d(${b.x}px, ${b.y + bob(b, t)}px, 0) rotate(${tilt}deg)`;
+        const scale = 0.9 + 0.1 * b.appear;
+        items[i].style.transform = `translate3d(${b.x}px, ${b.y + bob(b, t)}px, 0) rotate(${tilt}deg) scale(${scale})`;
+        items[i].style.opacity = String(b.appear);
       });
 
       // Lights sit on the centre of each logo (the square top part of the app)
@@ -111,8 +126,8 @@
         x: b.x + b.w / 2,
         y: b.y + b.w / 2 + bob(b, t),
         radius: APP_LIGHT_RADIUS,
-        strength: 0.55 + 0.45 * b.calm, // brighter when settled
-        ripple: 1 - 0.85 * b.calm, // water stills when settled
+        strength: (0.55 + 0.45 * b.calm) * b.appear, // brighter when settled
+        ripple: (1 - 0.85 * b.calm) * b.appear, // water stills when settled
         rgb: b.rgb
       }));
       if (mouse.presence > 0.01) {
@@ -158,6 +173,7 @@
         b.x = x;
         b.y = (H - b.h) / 2;
         b.calm = 1;
+        b.appear = 1;
         x += b.w + gap;
       });
       render(0);
@@ -188,7 +204,8 @@
       b.vy = Math.sin(angle) * speed;
     });
 
-    let last = performance.now();
+    const start = performance.now();
+    let last = start;
     let frame = 0;
 
     const step = (now: number) => {
@@ -205,6 +222,9 @@
       mouse.presence += ((mouse.inside ? 1 : 0) - mouse.presence) * (1 - Math.exp(-dt * 3));
 
       bodies.forEach((b, i) => {
+        // Fade in once this app's moment arrives
+        if (now - start > b.appearAt) b.appear += (1 - b.appear) * (1 - Math.exp(-dt * APPEAR_RATE));
+
         // Ease towards settled while hovered, and back to floating after
         const target = active === i ? 1 : 0;
         b.calm += (target - b.calm) * (1 - Math.exp(-dt * SETTLE_RATE));
@@ -281,7 +301,7 @@
       frame = requestAnimationFrame(step);
     };
 
-    render(0);
+    render(start / 1000);
     observer.observe(container);
     ready = true;
     frame = requestAnimationFrame(step);
@@ -295,12 +315,15 @@
   });
 </script>
 
-<div
-  bind:this={container}
-  class="relative h-full w-full overflow-hidden transition-opacity duration-700"
-  class:opacity-0={!ready}
->
-  <canvas bind:this={canvas} class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
+<div bind:this={container} class="relative h-full w-full overflow-hidden">
+  <canvas
+    bind:this={canvas}
+    class="pointer-events-none absolute inset-0 h-full w-full"
+    class:transition-opacity={!dotsInstant}
+    class:duration-700={!dotsInstant}
+    class:opacity-0={!ready && !dotsInstant}
+    aria-hidden="true"
+  ></canvas>
 
   {@render children?.()}
 
@@ -308,6 +331,7 @@
     <div
       bind:this={items[i]}
       class="absolute top-0 left-0 will-change-transform"
+      style="opacity: 0"
       role="presentation"
       onmouseenter={() => (active = i)}
       onmouseleave={() => (active = null)}

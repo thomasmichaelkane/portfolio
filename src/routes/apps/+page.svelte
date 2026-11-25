@@ -1,6 +1,10 @@
 <script lang="ts">
   import FloatingApps from '$lib/components/elements/FloatingApps.svelte';
   import appsData from '$lib/data/apps.json';
+  import { page } from '$app/state';
+
+  // Arriving from the home page's transition, the dots are already showing
+  const fromHome = page.state.fromHome === true;
 </script>
 
 <svelte:head>
@@ -9,7 +13,7 @@
 </svelte:head>
 
 <main class="h-svh bg-apps-bg font-serif text-neutral-200">
-  <FloatingApps apps={appsData.apps}>
+  <FloatingApps apps={appsData.apps} dotsInstant={fromHome}>
     <a
       href="/"
       aria-label="Home"
