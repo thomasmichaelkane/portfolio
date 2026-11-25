@@ -3,14 +3,12 @@
     {
       "name": "Hestia",
       "logoSrc": "/apps/hestia-logo.svg",
-      "playStoreUrl": "https://play.google.com/store/apps/details?id=TODO.hestia",
-      "privacyPolicyUrl": "/apps/hestia-privacy-policy"
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=TODO.hestia"
     },
     {
       "name": "Deadwax",
       "logoSrc": "/apps/deadwax-logo.svg",
-      "playStoreUrl": "https://play.google.com/store/apps/details?id=TODO.deadwax",
-      "privacyPolicyUrl": "/apps/deadwax-privacy-policy"
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=TODO.deadwax"
     }
   ]
 }

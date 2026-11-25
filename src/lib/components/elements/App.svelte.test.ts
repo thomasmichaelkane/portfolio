@@ -6,8 +6,7 @@ import App from './App.svelte';
 const props = {
 	name: 'Hestia',
 	logoSrc: '/apps/hestia-logo.svg',
-	playStoreUrl: 'https://play.google.com/store/apps/details?id=example',
-	privacyPolicyUrl: '/apps/hestia-privacy-policy'
+	playStoreUrl: 'https://play.google.com/store/apps/details?id=example'
 };
 
 describe('App.svelte', () => {
@@ -18,12 +17,10 @@ describe('App.svelte', () => {
 		expect(link).toHaveAttribute('target', '_blank');
 	});
 
-	test('shows the name and links to the privacy policy', () => {
-		render(App, { props });
-		expect(screen.getByText('Hestia')).toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'privacy policy' })).toHaveAttribute(
-			'href',
-			props.privacyPolicyUrl
-		);
+	test('name is hidden until active', async () => {
+		const { rerender } = render(App, { props });
+		expect(screen.getByText('Hestia')).toHaveClass('opacity-0');
+		await rerender({ ...props, active: true });
+		expect(screen.getByText('Hestia')).not.toHaveClass('opacity-0');
 	});
 });
