@@ -38,7 +38,7 @@
   const SETTLE_RATE = 3.5; // how quickly a hovered app comes to rest
   const SPACING = 40; // minimum clear space kept between apps
   const OBSTACLE_SPACING = 16; // minimum clear space around obstacles
-  const APP_LIGHT_RADIUS = 240; // how far an app's glow and ripples reach
+  const APP_LIGHT_SCALE = 1.6; // how far an app's glow and ripples reach, in logo widths
   const MOUSE_LIGHT_RADIUS = 130;
   // Entrance: apps appear one at a time in a random order, in ms
   const APPEAR_FIRST = 300; // earliest the first app appears
@@ -148,7 +148,7 @@
       const lights: LightSource[] = bodies.map((b) => ({
         x: b.x + b.w / 2,
         y: b.y + b.w / 2 + bob(b, t),
-        radius: APP_LIGHT_RADIUS,
+        radius: b.w * APP_LIGHT_SCALE,
         strength: (0.55 + 0.45 * b.calm) * b.appear, // brighter when settled
         ripple: (1 - 0.85 * b.calm) * b.appear, // water stills when settled
         rgb: b.rgb

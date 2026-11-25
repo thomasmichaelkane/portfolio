@@ -12,7 +12,7 @@
   let { name, logoSrc, playStoreUrl, color, active = false }: Props = $props();
 </script>
 
-<div class="flex w-32 flex-col items-center md:w-40">
+<div class="flex w-20 flex-col items-center md:w-36">
   <a
     href={playStoreUrl}
     target="_blank"
@@ -20,12 +20,12 @@
     aria-label="{name} on Google Play"
     class="block rounded-2xl"
   >
-    <img src={logoSrc} alt="" draggable="false" class="h-32 w-32 rounded-2xl md:h-40 md:w-40" />
+    <img src={logoSrc} alt="" draggable="false" class="h-20 w-20 rounded-2xl md:h-36 md:w-36" />
   </a>
 
   <!-- Soft-edged patch of the page colour behind the name, so it reads over the dots -->
   <p
-    class="name mt-2 px-8 py-3 font-fraunces text-3xl font-medium whitespace-nowrap lowercase transition-opacity duration-500 md:text-4xl [@media(hover:none)]:opacity-100"
+    class="name mt-1 px-5 py-2 font-fraunces text-xl font-medium md:mt-2 md:px-8 md:py-3 md:text-[2rem] whitespace-nowrap lowercase transition-opacity duration-500 [@media(hover:none)]:opacity-100"
     class:opacity-0={!active}
     style:color
   >
