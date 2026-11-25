@@ -62,7 +62,7 @@
       {#if buttonType == "docker"}
         <CopyButton
           command="{buttonLink}"
-          text="Copy Command"
+          text="Copy"
           color="docker"
           hcolor="primary"
           iconClass="fab fa-docker"
