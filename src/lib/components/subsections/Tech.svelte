@@ -47,7 +47,7 @@
 </script>
 
 <div>
-	{#each badges as badge}
+	{#each badges as badge (badge.name)}
 		<TechBadge imageSrc={badge.imageSrc} badgeName={badge.name} />
 	{/each}
 </div>

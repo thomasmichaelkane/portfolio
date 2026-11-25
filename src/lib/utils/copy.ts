@@ -12,7 +12,7 @@ interface CopyTextState {
 }
 
 function createCopyTextStore() {
-	const { subscribe, set, update } = writable<CopyTextState>({
+	const { subscribe, update } = writable<CopyTextState>({
 		copied: false,
 		tooltipPosition: { x: 0, y: 0 }
 	});

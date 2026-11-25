@@ -12,7 +12,7 @@
 </script>
 
 <div>
-	{#each icons as icon}
+	{#each icons as icon (icon.name)}
 		<IconBadge name={icon.name} url={icon.url} hcolor={icon.hcolor} />
 	{/each}
 </div>

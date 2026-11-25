@@ -6,7 +6,7 @@
 	export let name: string;
 	export let description: string;
 	export let imageName: string;
-	export let techStack: any = []; // Array of technology strings
+	export let techStack: string[] = [];
 	export let githubUrl: string;
 	export let buttonType: string | null = null;
 	export let buttonLink: string;
