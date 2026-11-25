@@ -13,7 +13,7 @@
     {alt}
     width={width}
     height={height}
-    class="grayscale brightness-75 opacity-60"
+    class="grayscale brightness-75 opacity-60 w-24 h-auto sm:w-[150px]"
   />
   {#if tooltip}
     <div class="absolute left-1/2 -translate-x-1/2 mt-2 w-max px-3 py-2 text-sm text-dtext opacity-0 group-hover:opacity-80 transition-opacity z-10">
