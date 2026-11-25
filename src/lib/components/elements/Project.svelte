@@ -39,7 +39,7 @@
     </div>
 
     <!-- Project Buttons -->
-    <div class="flex flex-col gap-3 px-4 pb-4 sm:col-span-2 sm:flex-row md:px-6 md:pb-6 short:col-span-3">
+    <div class="flex flex-col gap-3 px-4 pt-6 pb-4 sm:col-span-2 sm:flex-row md:px-6 md:pb-6 short:col-span-3">
 
       <LinkButton
         url="{githubUrl}"
