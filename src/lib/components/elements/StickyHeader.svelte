@@ -9,6 +9,8 @@
   export let arrowDirection: string | undefined = undefined;
   /** Show a house icon linking to / instead of the section name */
   export let home = false;
+  /** Click handler for the home icon (e.g. to play a transition first) */
+  export let onHome: ((e: MouseEvent) => void) | undefined = undefined;
   
 </script>
 
@@ -18,6 +20,7 @@
       <a
         href="/"
         aria-label="Home"
+        onclick={onHome}
         class="text-ltext transition-transform duration-200 ease-out hover:scale-115 focus-visible:scale-115"
       >
         <HouseIcon class="h-7 w-7 md:h-11 md:w-11 short:h-7 short:w-7" />

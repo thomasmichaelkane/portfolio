@@ -12,6 +12,8 @@ declare global {
 			fromApps?: boolean;
 			/** Set when arriving at /about via the home page fade */
 			fadeIn?: boolean;
+			/** Set when arriving at / via the /about home icon fade */
+			fromAbout?: boolean;
 		}
 		// interface Platform {}
 	}

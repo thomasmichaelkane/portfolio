@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { page } from '$app/state';
+  import { goto } from '$app/navigation';
   import type { PageData } from './$types';
   import { copyTextStore } from '$lib/utils/copy';
   import { downloadFile } from '$lib/utils/download';
@@ -21,23 +22,39 @@
     copyTextStore.cleanup();
   });
 
-  // Arriving from the home page, fade in out of its dark background
-  const FADE_IN = 900; // ms
+  // Fading in from, and back out to, the home page's dark background
+  const FADE = 900; // ms
   let hidden = page.state.fadeIn === true;
+  let leaving = false;
+
+  // Hold the page behind at the home page's grey while fading, so nothing flashes white
+  const holdDarkBackground = (on: boolean) =>
+    (document.documentElement.style.backgroundColor = on ? 'var(--color-apps-bg)' : '');
 
   onMount(() => {
-    if (!hidden) return;
-    // Hold the page behind at the home page's grey so nothing flashes white
-    const root = document.documentElement;
-    root.style.backgroundColor = 'var(--color-apps-bg)';
-    // Wait a frame so the hidden state is painted before the fade starts
-    requestAnimationFrame(() => requestAnimationFrame(() => (hidden = false)));
-    const reset = setTimeout(() => (root.style.backgroundColor = ''), FADE_IN + 100);
+    let reset: ReturnType<typeof setTimeout> | undefined;
+    if (hidden) {
+      holdDarkBackground(true);
+      // Wait a frame so the hidden state is painted before the fade starts
+      requestAnimationFrame(() => requestAnimationFrame(() => (hidden = false)));
+      reset = setTimeout(() => holdDarkBackground(false), FADE + 100);
+    }
     return () => {
       clearTimeout(reset);
-      root.style.backgroundColor = '';
+      holdDarkBackground(false);
     };
   });
+
+  function toHome(e: MouseEvent) {
+    // Let new-tab clicks and reduced-motion users navigate normally
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    e.preventDefault();
+    if (leaving) return;
+    leaving = true;
+    holdDarkBackground(true);
+    setTimeout(() => goto('/', { state: { fromAbout: true } }), FADE);
+  }
 </script>
 
 <!-- Head -->
@@ -50,13 +67,14 @@
 <ColorTrigger/>
 
 <!-- Page -->
-<div class="text-dtext font-serif transition-opacity" class:opacity-0={hidden} style:transition-duration="{FADE_IN}ms">
+<div class="text-dtext font-serif transition-opacity" class:opacity-0={hidden || leaving} style:transition-duration="{FADE}ms">
 
   <!-- Home -->
   <section class="min-h-svh bg-lbackground" id="home">
     <StickyHeader
       sectionName="Home"
       home
+      onHome={toHome}
       headerColor="primary"
       sectionLink="contact"
       linkText="Contact"
