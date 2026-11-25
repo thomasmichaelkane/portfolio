@@ -1,11 +1,11 @@
 {
-  "myName": "Tom Kane",
-  "myTagline": "Software Developer and Scientist",
-  "myBio": "I'm a software developer with a specialisation in scientific software. I have excellent skills in Python and Rust, a wealth of experience using various scientific libraries in Python, and now i'm expanding my skills in full stack development with technologies like FastAPI, Svelte, and others. I'm also working my way to become a certified AWS developer. I have previously spent many years working in medical science, with an expertise in optics and ophthalmology, and I am an author on 22 publications to date.",
-  "myEmail": "thomas.kane.ucl@gmail.com",
-  "cvFilename": "tom-kane-cv.pdf",
-  "githubUrl": "https://github.com/thomasmichaelkane",
-  "linkedinUrl": "https://www.linkedin.com/in/thomas-kane-65019474/",
-  "orcidUrl": "https://orcid.org/0000-0002-9809-2454", 
-  "scholarUrl": "https://scholar.google.com/citations?user=uHM2SdMAAAAJ&hl=en"
+	"myName": "Tom Kane",
+	"myTagline": "Software Developer and Scientist",
+	"myBio": "I'm a software developer with a specialisation in scientific software. I have excellent skills in Python and Rust, a wealth of experience using various scientific libraries in Python, and now i'm expanding my skills in full stack development with technologies like FastAPI, Svelte, and others. I'm also working my way to become a certified AWS developer. I have previously spent many years working in medical science, with an expertise in optics and ophthalmology, and I am an author on 22 publications to date.",
+	"myEmail": "thomas.kane.ucl@gmail.com",
+	"cvFilename": "tom-kane-cv.pdf",
+	"githubUrl": "https://github.com/thomasmichaelkane",
+	"linkedinUrl": "https://www.linkedin.com/in/thomas-kane-65019474/",
+	"orcidUrl": "https://orcid.org/0000-0002-9809-2454",
+	"scholarUrl": "https://scholar.google.com/citations?user=uHM2SdMAAAAJ&hl=en"
 }

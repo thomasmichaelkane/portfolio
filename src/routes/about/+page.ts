@@ -3,8 +3,8 @@ import infoData from '$lib/data/info.json';
 import projectsData from '$lib/data/projects.json';
 
 export const load: PageLoad = async () => {
-  return {
-    info: infoData,
-    projects: projectsData.projects,
-  };
+	return {
+		info: infoData,
+		projects: projectsData.projects
+	};
 };
