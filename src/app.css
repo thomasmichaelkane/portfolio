@@ -3,6 +3,15 @@
 /* short viewports, e.g. phones in landscape */
 @custom-variant short (@media (max-height: 500px));
 
+/* Fraunces, the Hestia wordmark font (SIL OFL, see static/fonts/Fraunces-OFL.txt).
+   Only downloaded on pages that use it. */
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/fraunces.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 @theme {
 
   /* colors */
@@ -22,9 +31,13 @@
   --color-github: #24292e;
   --color-site: #354F52;
 
+  /* dark background: landing and apps pages, and the fades between pages */
+  --color-apps-bg: #161616;
+
   /* fonts */
   --font-serif: 'Lora', serif; 
   --font-mono: 'Share Tech Mono', monospace; 
+  --font-fraunces: 'Fraunces', serif;
 }
 
 /* @theme { */

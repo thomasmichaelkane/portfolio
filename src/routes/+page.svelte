@@ -1,178 +1,126 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
-  import type { PageData } from './$types';
-  import { copyTextStore } from '$lib/utils/copy';
-  import { downloadFile } from '$lib/utils/download';
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import HomeLink from '$lib/components/elements/HomeLink.svelte';
+  import { drawShimmer } from '$lib/utils/shimmer';
 
-  import StickyHeader from '$lib/components/elements/StickyHeader.svelte';
-  import Icons from '$lib/components/subsections/Icons.svelte';
-  import Tech from '$lib/components/subsections/Tech.svelte';
-  import Certifications from '$lib/components/subsections/Certifications.svelte';
-  import Project from '$lib/components/elements/Project.svelte';
-	import ColorTrigger from '$lib/components/elements/ColorTrigger.svelte';
-	import Footer from '$lib/components/elements/Footer.svelte';
+  // Timings for leaving to another page, in ms
+  const OTHERS_FADE = 250; // the name and other link fade out
+  const CHOSEN_HOLD = 400; // the clicked link lingers this long...
+  const CHOSEN_FADE = 1200; // ...then fades out (with /apps, while the dots fade in)
+  const ARRIVE_FADE = 900; // content fading back in when returning from another page
 
-  export let data: PageData;
-  $: info = data.info;
-  $: projects = data.projects;
+  type Destination = 'about' | 'apps';
+  let leavingTo: Destination | null = $state(null);
+  let canvas: HTMLCanvasElement;
+  let dotsFrame = 0;
 
-  onDestroy(() => {
-    copyTextStore.cleanup();
+  // The content always fades in: on first load, and when returning from another page
+  let arriving = $state(true);
+
+  onMount(() => {
+    // Wait a frame so the hidden state is painted before the fade starts
+    if (arriving) requestAnimationFrame(() => requestAnimationFrame(() => (arriving = false)));
+    return () => cancelAnimationFrame(dotsFrame);
   });
+
+  // Draw the same dot field as /apps (no lights yet) so the hand-off is seamless
+  function runDots() {
+    const ctx = canvas.getContext('2d')!;
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.clientWidth;
+    const H = canvas.clientHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const frame = (now: number) => {
+      drawShimmer(ctx, W, H, now / 1000, []);
+      dotsFrame = requestAnimationFrame(frame);
+    };
+    dotsFrame = requestAnimationFrame(frame);
+  }
+
+  function leave(e: MouseEvent, to: Destination) {
+    // Let new-tab clicks and reduced-motion users navigate normally
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    e.preventDefault();
+    if (leavingTo) return;
+    leavingTo = to;
+    if (to === 'apps') runDots();
+    setTimeout(() => goto(`/${to}`, { state: { fromHome: true } }), CHOSEN_HOLD + CHOSEN_FADE);
+  }
+
+  // The clicked link lingers and fades slowly; everything else fades quickly
+  type Part = Destination | 'name';
+  const delay = (part: Part) => (leavingTo === part ? `${CHOSEN_HOLD}ms` : '0ms');
+  const duration = (part: Part) => (leavingTo === part ? `${CHOSEN_FADE}ms` : `${OTHERS_FADE}ms`);
 </script>
 
-<!-- Head -->
 <svelte:head>
   <title>tomkane</title>
-  <meta name="description" content="my portfolio" />
+  <meta name="description" content="Tom Kane" />
+  <!-- The text starts hidden and is faded in by script; without script, just show it -->
+  <noscript><style>.soft { opacity: 1 !important; }</style></noscript>
 </svelte:head>
 
-<!-- Ensure custom color classes -->
-<ColorTrigger/>
+<main
+  class="relative flex h-svh flex-col items-center justify-center overflow-hidden bg-apps-bg font-fraunces text-neutral-200 lowercase"
+>
+  <canvas
+    bind:this={canvas}
+    class="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity ease-in"
+    class:opacity-100={leavingTo === 'apps'}
+    style:transition-delay="{CHOSEN_HOLD}ms"
+    style:transition-duration="{CHOSEN_FADE}ms"
+    aria-hidden="true"
+  ></canvas>
 
-<!-- Page -->
-<div class="text-dtext font-serif">
+  <!-- The /apps home icon, fading in with the dots so it's already there on arrival -->
+  <HomeLink
+    link={false}
+    class="opacity-0 transition-opacity ease-in {leavingTo === 'apps' ? 'opacity-100' : ''}"
+    style="transition-delay: {CHOSEN_HOLD}ms; transition-duration: {CHOSEN_FADE}ms"
+  />
 
-  <!-- Home -->
-  <section class="min-h-svh bg-lbackground" id="home">
-    <StickyHeader
-      sectionName="Home"
-      headerColor="primary"
-      sectionLink="contact"
-      linkText="Contact"
-      arrowDirection="down"
-    />
+  <div
+    class="soft relative flex flex-col items-center transition-opacity"
+    class:opacity-0={arriving}
+    style:transition-duration="{ARRIVE_FADE}ms"
+  >
+    <h1
+      class="mb-10 text-6xl font-medium transition-opacity md:mb-14 md:text-8xl"
+      class:opacity-0={leavingTo}
+      style:transition-delay={delay('name')}
+      style:transition-duration={duration('name')}
+    >
+      Tom Kane
+    </h1>
 
-    <div class="flex-1 overflow-y-auto px-4 py-6">
-      <div class="pt-24 text-center md:pt-40 short:pt-10">
-        <h1 class="mb-6 text-4xl font-bold md:text-8xl short:mb-3 short:text-5xl">{info.myName}</h1>
-        <p class="mb-8 text-2xl md:text-6xl short:mb-4 short:text-3xl">{info.myTagline}</p>
-        <Icons {info} />
-      </div>
-    </div>
-  </section>
-
-  <!-- About -->
-  <section class="min-h-screen bg-lbackground" id="about">
-    <StickyHeader sectionName="About" headerColor="secondary" />
-
-    <div class="mx-auto px-4 pt-10 pb-8 md:px-8 md:pt-16">
-      <div class="grid items-center gap-8 md:grid-cols-2 md:gap-12">
-        <div class="space-y-8 md:pl-5">
-
-          <div class="p-3">
-            <h3 class="mb-6 text-3xl font-bold md:mb-10 md:text-5xl short:mb-6 short:text-3xl">Hello!</h3>
-            <p class="mb-6 text-base leading-relaxed md:text-2xl short:text-base">
-              {info.myBio}
-            </p>
-          </div>
-          <div class="p-3 text-base space-y-3 font-mono break-words lg:text-2xl short:text-base">
-            <p>email: {info.myEmail}</p>
-            <p>location: London</p>
-          </div>
-        </div>
-        
-        <div class="space-y-8 font-mono md:mt-8">
-          <div class="p-3">
-            <h4 class="mb-4 text-xl font-semibold md:text-2xl short:text-xl">tech</h4>
-            <Tech />
-          </div>
-          <div class="p-3">
-            <h4 class="mb-6 text-xl font-semibold md:mb-8 md:text-2xl short:mb-6 short:text-xl">aws journey</h4>
-            <Certifications />
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- Projects -->
-  <section class="min-h-screen bg-lbackground" id="projects">
-    <StickyHeader sectionName="Projects" headerColor="tertiary" />
-
-    <div class="px-2 pt-10 pb-20 md:px-4 md:pt-16 md:pb-35">
-      <div class="mx-auto max-w-7xl px-4">
-        <div class="grid gap-8">
-          {#each projects as project}
-            <Project 
-              name={project.name}
-              description={project.description}
-              imageName={project.imageName}
-              techStack={project.techStack}
-              githubUrl={project.githubUrl}
-              buttonType={project.buttonType}
-              buttonLink={project.buttonLink}
-            />
-          {/each}
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Contact -->
-  <section class="flex min-h-screen flex-col bg-lbackground" id="contact">
-
-    <StickyHeader
-      sectionName="Contact"
-      headerColor="quaternary"
-      sectionLink="home"
-      linkText="Back to top"
-      arrowDirection="up"
-    />
-
-    <div class="flex flex-1 flex-col px-4 py-6">
-      <div class="flex flex-1 items-center justify-center">
-        <div class="mx-auto max-w-2xl text-center">
-          <h1 class="mb-8 text-2xl font-bold leading-tight md:text-6xl short:text-4xl">
-            If you're 
-            <span class="text-primary">interested</span>, 
-            please get in touch.
-          </h1>
-          
-          <div class="relative mb-3 block sm:mr-2 sm:inline-block">
-            <button 
-              on:click={() => copyTextStore.copyToClipboard(info.myEmail)}
-              class="cursor-pointer rounded-lg bg-primary w-full px-6 py-3 text-lg font-semibold sm:w-auto md:px-8 md:py-4 md:text-2xl short:py-3 short:text-lg text-ltext shadow-lg transition-all duration-300 hover:scale-105 hover:opacity-80 hover:shadow-xl"
-            >
-              Copy my email
-            </button>
-            
-            {#if $copyTextStore.copied}
-              <div
-                class="bg-secondary pointer-events-none fixed z-50 -mt-2 -translate-x-1/2 -translate-y-full transform rounded bg-ctext px-3 py-1 text-sm text-ltext shadow-lg"
-                style="left: {$copyTextStore.tooltipPosition.x}px; top: {$copyTextStore.tooltipPosition.y}px;"
-              >
-                Nice one!
-              </div>
-            {/if}
-          </div>
-           
-          <div class="relative mb-3 block sm:mr-2 sm:inline-block">
-            <button 
-              on:click={() => downloadFile(`${info.cvFilename}`)}
-              class="cursor-pointer rounded-lg bg-secondary w-full px-6 py-3 text-lg font-semibold sm:w-auto md:px-8 md:py-4 md:text-2xl short:py-3 short:text-lg text-ltext shadow-lg transition-all duration-300 hover:scale-105 hover:opacity-80 hover:shadow-xl"
-            >
-              Download my CV
-            </button>
-            
-          </div>
-
-        </div>
-      </div>
-      
-      <Footer/>
-
-    </div>
-  </section>
-</div>
+    <nav class="flex gap-12 text-3xl md:gap-16 md:text-4xl">
+      {#each ['about', 'apps'] as const as link (link)}
+        <a
+          href="/{link}"
+          onclick={(e) => leave(e, link)}
+          class="transition-[color,opacity] hover:text-neutral-200"
+          class:text-neutral-400={leavingTo !== link}
+          class:opacity-0={leavingTo}
+          style:transition-delay={delay(link)}
+          style:transition-duration={duration(link)}
+        >
+          {link}
+        </a>
+      {/each}
+    </nav>
+  </div>
+</main>
 
 <style>
-  :global(html) {
-    scroll-behavior: smooth;
-  }
-  
-  :global(body) {
-    margin: 0;
+  /* Hestia's wordmark settings for Fraunces */
+  .soft {
+    font-variation-settings:
+      'SOFT' 100,
+      'opsz' 96;
+    letter-spacing: -0.01em;
   }
 </style>

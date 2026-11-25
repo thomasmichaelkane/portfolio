@@ -5,7 +5,10 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		// interface PageData {}
-		// interface PageState {}
+		interface PageState {
+			/** Set when arriving at /apps or /about via the home page's transition */
+			fromHome?: boolean;
+		}
 		// interface Platform {}
 	}
 }

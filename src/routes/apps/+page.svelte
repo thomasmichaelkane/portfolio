@@ -1,26 +1,37 @@
+<script lang="ts">
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+  import FloatingApps from '$lib/components/elements/FloatingApps.svelte';
+  import HomeLink from '$lib/components/elements/HomeLink.svelte';
+  import appsData from '$lib/data/apps.json';
+
+  // Timings for going back home, in ms
+  const FADE_OUT = 700; // everything on this page fades out
+  const GAP = 350; // then a moment of empty page before the home page fades in
+
+  // Arriving from the home page's transition, the dots are already showing
+  const fromHome = page.state.fromHome === true;
+
+  let leaving = $state(false);
+
+  function toHome(e: MouseEvent) {
+    // Let new-tab clicks and reduced-motion users navigate normally
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    e.preventDefault();
+    if (leaving) return;
+    leaving = true;
+    setTimeout(() => goto('/'), FADE_OUT + GAP);
+  }
+</script>
+
 <svelte:head>
   <title>apps - tomkane</title>
   <meta name="description" content="Apps by Tom Kane" />
 </svelte:head>
 
-<div class="h-screen bg-lbackground px-4 py-6 font-serif text-dtext">
-  <div class="pt-40 text-center">
-    <h1 class="mb-16 text-6xl font-bold md:text-8xl">Apps</h1>
-    <div class="flex flex-wrap justify-center gap-24">
-      <div class="flex flex-col items-center gap-6">
-        <img src="/apps/hestia-logo.svg" alt="Hestia logo" class="h-32 w-32 rounded-2xl" />
-        <p class="text-4xl md:text-5xl">Hestia</p>
-      </div>
-      <div class="flex flex-col items-center gap-6">
-        <div
-          class="flex h-32 w-32 items-center justify-center rounded-2xl bg-dtext text-6xl text-ltext"
-          role="img"
-          aria-label="Deadwax logo"
-        >
-          <i class="fa-solid fa-music"></i>
-        </div>
-        <p class="text-4xl md:text-5xl">Deadwax</p>
-      </div>
-    </div>
-  </div>
-</div>
+<main class="h-svh bg-apps-bg font-serif text-neutral-200">
+  <FloatingApps apps={appsData.apps} dotsInstant={fromHome} {leaving} fadeOutMs={FADE_OUT}>
+    <HomeLink data-obstacle onclick={toHome} />
+  </FloatingApps>
+</main>
