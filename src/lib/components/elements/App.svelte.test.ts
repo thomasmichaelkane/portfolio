@@ -6,6 +6,7 @@ import App from './App.svelte';
 const props = {
 	name: 'Hestia',
 	logoSrc: '/apps/hestia-logo.svg',
+	color: '#C98A5E',
 	playStoreUrl: 'https://play.google.com/store/apps/details?id=example'
 };
 

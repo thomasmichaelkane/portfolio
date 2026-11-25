@@ -8,6 +8,6 @@
   <meta name="description" content="Apps by Tom Kane" />
 </svelte:head>
 
-<main class="h-svh bg-[#161616] font-serif text-neutral-200">
+<main class="h-svh bg-apps-bg font-serif text-neutral-200">
   <FloatingApps apps={appsData.apps} />
 </main>

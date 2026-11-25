@@ -21,7 +21,7 @@
   const SETTLE_RATE = 3.5; // how quickly a hovered app comes to rest
   const SPACING = 32; // minimum clear space kept between apps
   const APP_LIGHT_RADIUS = 240; // how far an app's glow and ripples reach
-  const MOUSE_LIGHT_RADIUS = 170;
+  const MOUSE_LIGHT_RADIUS = 130;
 
   interface Body {
     x: number;
@@ -98,8 +98,8 @@
           x: mouse.x,
           y: mouse.y,
           radius: MOUSE_LIGHT_RADIUS,
-          strength: 0.6 * mouse.presence,
-          ripple: Math.min(mouse.speed / 300, 1) * mouse.presence,
+          strength: 0.25 * mouse.presence,
+          ripple: Math.min(mouse.speed / 600, 0.5) * mouse.presence,
           rgb: [240, 236, 230]
         });
       }
@@ -266,7 +266,7 @@
       onfocusin={() => (active = i)}
       onfocusout={() => (active = null)}
     >
-      <App name={app.name} logoSrc={app.logoSrc} playStoreUrl={app.playStoreUrl} active={active === i} />
+      <App name={app.name} logoSrc={app.logoSrc} playStoreUrl={app.playStoreUrl} color={app.accent} active={active === i} />
     </div>
   {/each}
 </div>
