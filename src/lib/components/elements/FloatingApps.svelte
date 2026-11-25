@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import App from './App.svelte';
   import { drawShimmer, hexToRgb, type LightSource } from '$lib/utils/shimmer';
 
@@ -10,7 +10,9 @@
     accent: string; // hex colour of the app's glow on the background
   }
 
-  let { apps }: { apps: AppInfo[] } = $props();
+  // Children are drawn over the background; any marked `data-obstacle` are
+  // fixed shapes the apps bounce off (e.g. a corner link)
+  let { apps, children }: { apps: AppInfo[]; children?: Snippet } = $props();
 
   // Tuning: speeds in px/s, times in seconds
   const MIN_SPEED = 12;
@@ -19,7 +21,8 @@
   const BOB_PX = 7; // vertical bob amplitude
   const TILT_DEG = 4; // rotation wobble amplitude
   const SETTLE_RATE = 3.5; // how quickly a hovered app comes to rest
-  const SPACING = 32; // minimum clear space kept between apps
+  const SPACING = 40; // minimum clear space kept between apps
+  const OBSTACLE_SPACING = 16; // minimum clear space around obstacles
   const APP_LIGHT_RADIUS = 240; // how far an app's glow and ripples reach
   const MOUSE_LIGHT_RADIUS = 130;
 
@@ -30,7 +33,7 @@
     vy: number;
     w: number;
     h: number;
-    r: number; // collision radius, covering the logo and name
+    r: number; // radius covering the logo and name, used for initial placement
     phase: number;
     calm: number; // 0 = floating freely, 1 = fully settled
     rgb: [number, number, number];
@@ -51,6 +54,16 @@
       rgb: hexToRgb(apps[i].accent)
     }));
 
+    // Touch screens always show names, so apps there always need room for them
+    const touch = window.matchMedia('(hover: none)').matches;
+    let obstacles: { x: number; y: number; r: number }[] = [];
+
+    // Collision circle: just the logo, or the logo and name while the name shows
+    const shape = (b: Body, i: number) =>
+      touch || active === i
+        ? { x: b.x + b.w / 2, y: b.y + b.h / 2, r: b.h / 2 }
+        : { x: b.x + b.w / 2, y: b.y + b.w / 2, r: b.w / 2 };
+
     // Pointer as a light: eased position, fades in/out, ripples with speed
     const mouse = { x: 0, y: 0, targetX: 0, targetY: 0, presence: 0, inside: false, speed: 0 };
 
@@ -66,6 +79,15 @@
       canvas.width = W * dpr;
       canvas.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const origin = container.getBoundingClientRect();
+      obstacles = [...container.querySelectorAll<HTMLElement>('[data-obstacle]')].map((el) => {
+        const r = el.getBoundingClientRect();
+        return {
+          x: r.left - origin.left + r.width / 2,
+          y: r.top - origin.top + r.height / 2,
+          r: Math.max(r.width, r.height) / 2
+        };
+      });
       items.forEach((el, i) => {
         const b = bodies[i];
         b.w = el.offsetWidth;
@@ -153,9 +175,11 @@
       for (let attempt = 0; attempt < 100; attempt++) {
         b.x = edge + Math.random() * Math.max(W - b.w - 2 * edge, 0);
         b.y = edge + Math.random() * Math.max(H - b.h - 2 * edge, 0);
-        const clear = bodies.slice(0, i).every(
-          (o) => Math.hypot(b.x + b.w / 2 - (o.x + o.w / 2), b.y + b.h / 2 - (o.y + o.h / 2)) > b.r + o.r + SPACING
-        );
+        const cx = b.x + b.w / 2;
+        const cy = b.y + b.h / 2;
+        const clear =
+          bodies.slice(0, i).every((o) => Math.hypot(cx - (o.x + o.w / 2), cy - (o.y + o.h / 2)) > b.r + o.r + SPACING) &&
+          obstacles.every((o) => Math.hypot(cx - o.x, cy - o.y) > b.r + o.r + OBSTACLE_SPACING);
         if (clear) break;
       }
       const angle = Math.random() * Math.PI * 2;
@@ -209,10 +233,12 @@
         for (let j = i + 1; j < bodies.length; j++) {
           const a = bodies[i];
           const b = bodies[j];
-          const dx = b.x + b.w / 2 - (a.x + a.w / 2);
-          const dy = b.y + b.h / 2 - (a.y + a.h / 2);
+          const sa = shape(a, i);
+          const sb = shape(b, j);
+          const dx = sb.x - sa.x;
+          const dy = sb.y - sa.y;
           const dist = Math.hypot(dx, dy) || 1;
-          const overlap = a.r + b.r + SPACING - dist;
+          const overlap = sa.r + sb.r + SPACING - dist;
           if (overlap <= 0) continue;
           const nx = dx / dist;
           const ny = dy / dist;
@@ -230,6 +256,26 @@
           if (bDot < 0) { b.vx -= 2 * bDot * nx; b.vy -= 2 * bDot * ny; }
         }
       }
+
+      // Apps bounce off fixed obstacles
+      bodies.forEach((b, i) => {
+        const free = 1 - b.calm;
+        if (free < 0.01) return;
+        const s = shape(b, i);
+        for (const o of obstacles) {
+          const dx = s.x - o.x;
+          const dy = s.y - o.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          const overlap = s.r + o.r + OBSTACLE_SPACING - dist;
+          if (overlap <= 0) continue;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          b.x += nx * overlap;
+          b.y += ny * overlap;
+          const dot = b.vx * nx + b.vy * ny;
+          if (dot < 0) { b.vx -= 2 * dot * nx; b.vy -= 2 * dot * ny; }
+        }
+      });
 
       render(now / 1000);
       frame = requestAnimationFrame(step);
@@ -255,6 +301,8 @@
   class:opacity-0={!ready}
 >
   <canvas bind:this={canvas} class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
+
+  {@render children?.()}
 
   {#each apps as app, i}
     <div
