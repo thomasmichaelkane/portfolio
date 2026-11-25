@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { page } from '$app/state';
-  import { dissolve, setDissolve } from '$lib/utils/pixelate';
   import type { PageData } from './$types';
   import { copyTextStore } from '$lib/utils/copy';
   import { downloadFile } from '$lib/utils/download';
@@ -22,18 +21,22 @@
     copyTextStore.cleanup();
   });
 
-  // Arriving from the home page's pixel dissolve: start fully dissolved and clear.
-  // Hidden until the filter is applied so the page never flashes sharp first.
-  const DISSOLVE_IN = 900; // ms
-  let pageEl: HTMLElement;
-  let hidden = page.state.pixelIn === true;
+  // Arriving from the home page, fade in out of its dark background
+  const FADE_IN = 900; // ms
+  let hidden = page.state.fadeIn === true;
 
   onMount(() => {
     if (!hidden) return;
-    const background = 'var(--color-lbackground)';
-    setDissolve(pageEl, 1, background);
-    hidden = false;
-    dissolve(pageEl, { from: 1, to: 0, duration: DISSOLVE_IN, background });
+    // Hold the page behind at the home page's grey so nothing flashes white
+    const root = document.documentElement;
+    root.style.backgroundColor = 'var(--color-apps-bg)';
+    // Wait a frame so the hidden state is painted before the fade starts
+    requestAnimationFrame(() => requestAnimationFrame(() => (hidden = false)));
+    const reset = setTimeout(() => (root.style.backgroundColor = ''), FADE_IN + 100);
+    return () => {
+      clearTimeout(reset);
+      root.style.backgroundColor = '';
+    };
   });
 </script>
 
@@ -47,7 +50,7 @@
 <ColorTrigger/>
 
 <!-- Page -->
-<div bind:this={pageEl} class="text-dtext font-serif" class:invisible={hidden}>
+<div class="text-dtext font-serif transition-opacity" class:opacity-0={hidden} style:transition-duration="{FADE_IN}ms">
 
   <!-- Home -->
   <section class="min-h-svh bg-lbackground" id="home">

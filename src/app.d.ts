@@ -10,8 +10,8 @@ declare global {
 			fromHome?: boolean;
 			/** Set when arriving at / via the /apps home link transition */
 			fromApps?: boolean;
-			/** Set when arriving at /about via the home page pixelate transition */
-			pixelIn?: boolean;
+			/** Set when arriving at /about via the home page fade */
+			fadeIn?: boolean;
 		}
 		// interface Platform {}
 	}

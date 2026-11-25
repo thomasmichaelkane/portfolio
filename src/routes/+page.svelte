@@ -4,20 +4,16 @@
   import { page } from '$app/state';
   import HomeLink from '$lib/components/elements/HomeLink.svelte';
   import { drawShimmer } from '$lib/utils/shimmer';
-  import { dissolve } from '$lib/utils/pixelate';
 
-  // Timings for the hand-off to /apps, in ms
-  const OTHERS_FADE = 250; // name and other links fade out
-  const APPS_HOLD = 400; // "apps" lingers this long...
-  const APPS_FADE = 1200; // ...then fades out while the dots fade in
+  // Timings for leaving to another page, in ms
+  const OTHERS_FADE = 250; // the name and other link fade out
+  const CHOSEN_HOLD = 400; // the clicked link lingers this long...
+  const CHOSEN_FADE = 1200; // ...then fades out (with /apps, while the dots fade in)
   const ARRIVE_FADE = 900; // content fading back in when returning from /apps
 
-  const DISSOLVE_OUT = 700; // pixel-dissolve out to /about, ms
-
-  let leaving = $state(false);
-  let pixelating = false;
+  type Destination = 'about' | 'apps';
+  let leavingTo: Destination | null = $state(null);
   let canvas: HTMLCanvasElement;
-  let mainEl: HTMLElement;
   let dotsFrame = 0;
 
   // Returning from /apps (which has already faded out), fade the content in
@@ -47,27 +43,21 @@
     dotsFrame = requestAnimationFrame(frame);
   }
 
-  async function toAbout(e: MouseEvent) {
+  function leave(e: MouseEvent, to: Destination) {
     // Let new-tab clicks and reduced-motion users navigate normally
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     e.preventDefault();
-    if (leaving || pixelating) return;
-    pixelating = true;
-    await dissolve(mainEl, { from: 0, to: 1, duration: DISSOLVE_OUT, background: 'var(--color-apps-bg)' });
-    goto('/about', { state: { pixelIn: true } });
+    if (leavingTo) return;
+    leavingTo = to;
+    if (to === 'apps') runDots();
+    const state = to === 'apps' ? { fromHome: true } : { fadeIn: true };
+    setTimeout(() => goto(`/${to}`, { state }), CHOSEN_HOLD + CHOSEN_FADE);
   }
 
-  function toApps(e: MouseEvent) {
-    // Let new-tab clicks and reduced-motion users navigate normally
-    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    e.preventDefault();
-    if (leaving) return;
-    leaving = true;
-    runDots();
-    setTimeout(() => goto('/apps', { state: { fromHome: true } }), APPS_HOLD + APPS_FADE);
-  }
+  // The clicked link lingers and fades slowly; everything else fades quickly
+  const delay = (link: Destination) => (leavingTo === link ? `${CHOSEN_HOLD}ms` : '0ms');
+  const duration = (link: Destination) => (leavingTo === link ? `${CHOSEN_FADE}ms` : `${OTHERS_FADE}ms`);
 </script>
 
 <svelte:head>
@@ -76,22 +66,22 @@
 </svelte:head>
 
 <main
-  bind:this={mainEl}
-  class="relative flex h-svh flex-col items-center justify-center overflow-hidden bg-apps-bg font-fraunces text-neutral-200 lowercase">
+  class="relative flex h-svh flex-col items-center justify-center overflow-hidden bg-apps-bg font-fraunces text-neutral-200 lowercase"
+>
   <canvas
     bind:this={canvas}
     class="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity ease-in"
-    class:opacity-100={leaving}
-    style:transition-delay="{APPS_HOLD}ms"
-    style:transition-duration="{APPS_FADE}ms"
+    class:opacity-100={leavingTo === 'apps'}
+    style:transition-delay="{CHOSEN_HOLD}ms"
+    style:transition-duration="{CHOSEN_FADE}ms"
     aria-hidden="true"
   ></canvas>
 
   <!-- The /apps home icon, fading in with the dots so it's already there on arrival -->
   <HomeLink
     link={false}
-    class="opacity-0 transition-opacity ease-in {leaving ? 'opacity-100' : ''}"
-    style="transition-delay: {APPS_HOLD}ms; transition-duration: {APPS_FADE}ms"
+    class="opacity-0 transition-opacity ease-in {leavingTo === 'apps' ? 'opacity-100' : ''}"
+    style="transition-delay: {CHOSEN_HOLD}ms; transition-duration: {CHOSEN_FADE}ms"
   />
 
   <div
@@ -101,33 +91,26 @@
   >
     <h1
       class="mb-10 text-6xl font-medium transition-opacity md:mb-14 md:text-8xl"
-      class:opacity-0={leaving}
+      class:opacity-0={leavingTo}
       style:transition-duration="{OTHERS_FADE}ms"
     >
       Tom Kane
     </h1>
 
     <nav class="flex gap-12 text-3xl md:gap-16 md:text-4xl">
-      <a
-        href="/about"
-        onclick={toAbout}
-        class="text-neutral-400 transition-[color,opacity] hover:text-neutral-200"
-        class:opacity-0={leaving}
-        style:transition-duration="{OTHERS_FADE}ms"
-      >
-        about
-      </a>
-      <a
-        href="/apps"
-        onclick={toApps}
-        class="transition-[color,opacity] hover:text-neutral-200"
-        class:text-neutral-400={!leaving}
-        class:opacity-0={leaving}
-        style:transition-delay={leaving ? `${APPS_HOLD}ms` : '0ms'}
-        style:transition-duration={leaving ? `${APPS_FADE}ms` : `${OTHERS_FADE}ms`}
-      >
-        apps
-      </a>
+      {#each ['about', 'apps'] as const as link}
+        <a
+          href="/{link}"
+          onclick={(e) => leave(e, link)}
+          class="transition-[color,opacity] hover:text-neutral-200"
+          class:text-neutral-400={leavingTo !== link}
+          class:opacity-0={leavingTo}
+          style:transition-delay={delay(link)}
+          style:transition-duration={duration(link)}
+        >
+          {link}
+        </a>
+      {/each}
     </nav>
   </div>
 </main>
