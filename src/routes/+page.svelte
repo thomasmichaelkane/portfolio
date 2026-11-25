@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/state';
   import HomeLink from '$lib/components/elements/HomeLink.svelte';
   import { drawShimmer } from '$lib/utils/shimmer';
 
@@ -16,8 +15,8 @@
   let canvas: HTMLCanvasElement;
   let dotsFrame = 0;
 
-  // Returning from /apps or /about (which have already faded out), fade the content in
-  let arriving = $state(page.state.fromApps === true || page.state.fromAbout === true);
+  // The content always fades in: on first load, and when returning from another page
+  let arriving = $state(true);
 
   onMount(() => {
     // Wait a frame so the hidden state is painted before the fade starts
@@ -62,6 +61,8 @@
 <svelte:head>
   <title>tomkane</title>
   <meta name="description" content="Tom Kane" />
+  <!-- The text starts hidden and is faded in by script; without script, just show it -->
+  <noscript><style>.soft { opacity: 1 !important; }</style></noscript>
 </svelte:head>
 
 <main

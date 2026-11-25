@@ -37,7 +37,13 @@
     (document.documentElement.style.backgroundColor = on ? 'var(--color-apps-bg)' : '');
   const lockScroll = (on: boolean) => (document.documentElement.style.overflow = on ? 'hidden' : '');
 
+  // Scroll hint: shown only while at the very top of the page
+  let atTop = true;
+  const onScroll = () => (atTop = window.scrollY <= 0);
+
   onMount(() => {
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
     const timers: ReturnType<typeof setTimeout>[] = [];
     if (stage === 0) {
       holdDarkBackground(true);
@@ -59,6 +65,7 @@
       );
     }
     return () => {
+      window.removeEventListener('scroll', onScroll);
       timers.forEach(clearTimeout);
       holdDarkBackground(false);
       lockScroll(false);
@@ -90,7 +97,7 @@
 <div class="text-dtext font-serif transition-opacity" class:opacity-0={stage < 1 || leaving} style:transition-duration="{leaving ? FADE_OUT : FADE_IN}ms">
 
   <!-- Home -->
-  <section class="min-h-svh bg-lbackground" id="home">
+  <section class="relative min-h-svh bg-lbackground" id="home">
     <StickyHeader
       sectionName="Home"
       home
@@ -113,6 +120,27 @@
         <p class="mb-8 text-2xl md:text-6xl short:mb-4 short:text-3xl">{info.myTagline}</p>
         <Icons {info} />
       </div>
+    </div>
+
+    <!-- Faint pulsing arrow hinting there's more below; hidden once scrolled at all -->
+    <div
+      class="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center text-dtext/30 transition-opacity duration-500 md:bottom-10 short:bottom-3"
+      class:opacity-0={!atTop || stage < 4}
+      aria-hidden="true"
+    >
+      <!-- Lucide "chevron-down" icon (https://lucide.dev, ISC licence) -->
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="scroll-hint h-8 w-8 md:h-10 md:w-10"
+      >
+        <path d="m6 9 6 6 6-6" />
+      </svg>
     </div>
   </section>
 
@@ -232,6 +260,24 @@
 </div>
 
 <style>
+  /* Gentle pulse for the scroll hint (off for reduced motion) */
+  @media (prefers-reduced-motion: no-preference) {
+    .scroll-hint {
+      animation: scroll-hint 2.4s ease-in-out infinite;
+    }
+  }
+  @keyframes scroll-hint {
+    0%,
+    100% {
+      opacity: 0.45;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(6px);
+    }
+  }
+
   :global(html) {
     scroll-behavior: smooth;
   }
