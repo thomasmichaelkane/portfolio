@@ -14,7 +14,7 @@
   $: imageSrc = `/project-images/${imageName}`;
 </script>
 
-<div class="bg-lbackground bg-opacity-10 border-2 border-cborder backdrop-blur-sm overflow-hidden hover:bg-opacity-20 transition-all duration-300 transform hover:scale-105 shadow-lg">
+<div class="bg-lbackground bg-opacity-10 border-2 border-cborder backdrop-blur-sm overflow-hidden hover:bg-opacity-20 transition-all duration-300 transform md:hover:scale-105 shadow-lg">
   <div class="flex flex-col sm:flex-row">
     <!-- Project Image -->
     <div class="relative overflow-hidden sm:w-1/3">
@@ -27,14 +27,14 @@
     </div>
     
     <!-- Project Content -->
-    <div class="p-6 sm:w-2/3 flex flex-col justify-between">
+    <div class="p-4 md:p-6 sm:w-2/3 flex flex-col justify-between">
       <div>
-        <h3 class="text-4xl font-bold mb-3 text-ctext">{name}</h3>
-        <p class="text-2xl text-ctext mb-6 leading-relaxed">{description}</p>
+        <h3 class="text-3xl md:text-4xl font-bold mb-3 text-ctext">{name}</h3>
+        <p class="text-lg md:text-2xl text-ctext mb-6 leading-relaxed">{description}</p>
         <TechStack stack={techStack}></TechStack>
       </div>
       
-      <div class="flex gap-3">
+      <div class="flex flex-col sm:flex-row gap-3">
 
         <LinkButton
           url="{githubUrl}"

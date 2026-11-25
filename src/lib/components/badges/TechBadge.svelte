@@ -8,14 +8,14 @@
 
 </script>
 
-<div class="inline-block m-5 transition-all duration-200 ease-in-out relative group">
+<div class="inline-block m-3 md:m-5 transition-all duration-200 ease-in-out relative group">
   <div class="inline-block relative transition-transform duration-200 ease-in-out group-hover:scale-110">
     <img
       src={imageSrc}
       {alt}
       width={width}
       height={height}
-      class="rounded-lg"
+      class="rounded-lg w-12 h-12 md:w-[60px] md:h-[60px]"
     />
     <div class="absolute -bottom-7 left-1/2 transform -translate-x-1/2 bg-ctext text-cbackground px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 invisible transition-all duration-200 ease-in-out pointer-events-none z-50 group-hover:opacity-100 group-hover:visible">
       {badgeName}

@@ -4,7 +4,7 @@
   export let hcolor: string;
 </script>
 
-<div class="inline-block m-5 hover:scale-120 hover:text-{hcolor} transition-all duration-150 ease-in-out">
+<div class="inline-block m-3 sm:m-5 hover:scale-120 hover:text-{hcolor} transition-all duration-150 ease-in-out">
   <a
     href={url}
     target="_blank"
