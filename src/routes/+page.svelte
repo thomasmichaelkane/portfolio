@@ -4,6 +4,7 @@
   import { page } from '$app/state';
   import HomeLink from '$lib/components/elements/HomeLink.svelte';
   import { drawShimmer } from '$lib/utils/shimmer';
+  import { pixelate, PIXEL_MAX } from '$lib/utils/pixelate';
 
   // Timings for the hand-off to /apps, in ms
   const OTHERS_FADE = 250; // name and other links fade out
@@ -11,8 +12,12 @@
   const APPS_FADE = 1200; // ...then fades out while the dots fade in
   const ARRIVE_FADE = 900; // content fading back in when returning from /apps
 
+  const PIXEL_OUT = 550; // pixelate out to /about, ms
+
   let leaving = $state(false);
+  let pixelating = false;
   let canvas: HTMLCanvasElement;
+  let mainEl: HTMLElement;
   let dotsFrame = 0;
 
   // Returning from /apps (which has already faded out), fade the content in
@@ -42,6 +47,23 @@
     dotsFrame = requestAnimationFrame(frame);
   }
 
+  async function toAbout(e: MouseEvent) {
+    // Let new-tab clicks and reduced-motion users navigate normally
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    e.preventDefault();
+    if (leaving || pixelating) return;
+    pixelating = true;
+    await pixelate(mainEl, {
+      from: 1,
+      to: PIXEL_MAX,
+      blurTo: 3,
+      duration: PIXEL_OUT,
+      background: 'var(--color-apps-bg)'
+    });
+    goto('/about', { state: { pixelIn: true } });
+  }
+
   function toApps(e: MouseEvent) {
     // Let new-tab clicks and reduced-motion users navigate normally
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -59,7 +81,9 @@
   <meta name="description" content="Tom Kane" />
 </svelte:head>
 
-<main class="relative flex h-svh flex-col items-center justify-center overflow-hidden bg-apps-bg font-fraunces text-neutral-200 lowercase">
+<main
+  bind:this={mainEl}
+  class="relative flex h-svh flex-col items-center justify-center overflow-hidden bg-apps-bg font-fraunces text-neutral-200 lowercase">
   <canvas
     bind:this={canvas}
     class="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity ease-in"
@@ -92,6 +116,7 @@
     <nav class="flex gap-12 text-3xl md:gap-16 md:text-4xl">
       <a
         href="/about"
+        onclick={toAbout}
         class="text-neutral-400 transition-[color,opacity] hover:text-neutral-200"
         class:opacity-0={leaving}
         style:transition-duration="{OTHERS_FADE}ms"

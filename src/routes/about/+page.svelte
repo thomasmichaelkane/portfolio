@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { page } from '$app/state';
+  import { pixelate, setPixelated, PIXEL_MAX } from '$lib/utils/pixelate';
   import type { PageData } from './$types';
   import { copyTextStore } from '$lib/utils/copy';
   import { downloadFile } from '$lib/utils/download';
@@ -19,6 +21,20 @@
   onDestroy(() => {
     copyTextStore.cleanup();
   });
+
+  // Arriving from the home page's pixelate transition: start as blocks and sharpen.
+  // Hidden until the filter is applied so the page never flashes sharp first.
+  const PIXEL_IN = 650; // ms
+  let pageEl: HTMLElement;
+  let hidden = page.state.pixelIn === true;
+
+  onMount(() => {
+    if (!hidden) return;
+    const background = 'var(--color-lbackground)';
+    setPixelated(pageEl, PIXEL_MAX, 3, background);
+    hidden = false;
+    pixelate(pageEl, { from: PIXEL_MAX, to: 1, blurFrom: 3, duration: PIXEL_IN, background });
+  });
 </script>
 
 <!-- Head -->
@@ -31,12 +47,13 @@
 <ColorTrigger/>
 
 <!-- Page -->
-<div class="text-dtext font-serif">
+<div bind:this={pageEl} class="text-dtext font-serif" class:invisible={hidden}>
 
   <!-- Home -->
   <section class="min-h-svh bg-lbackground" id="home">
     <StickyHeader
       sectionName="Home"
+      home
       headerColor="primary"
       sectionLink="contact"
       linkText="Contact"
