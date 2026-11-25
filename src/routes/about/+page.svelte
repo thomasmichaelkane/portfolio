@@ -22,26 +22,45 @@
     copyTextStore.cleanup();
   });
 
-  // Fading in from, and back out to, the home page's dark background
-  const FADE = 900; // ms
-  let hidden = page.state.fadeIn === true;
+  // Arriving from the home page, in stages (each starts when the last ends):
+  //   0 hidden -> 1 the page fades up out of the dark -> 2 the text fades in
+  //   -> 3 the top bar slides down -> 4 done, scrolling unlocked
+  const FADE = 900; // ms, page fade in (and out when going back home)
+  const TEXT_FADE = 400; // ms
+  const BAR_SLIDE = 500; // ms
+  let stage = page.state.fadeIn === true ? 0 : 4;
   let leaving = false;
 
   // Hold the page behind at the home page's grey while fading, so nothing flashes white
   const holdDarkBackground = (on: boolean) =>
     (document.documentElement.style.backgroundColor = on ? 'var(--color-apps-bg)' : '');
+  const lockScroll = (on: boolean) => (document.documentElement.style.overflow = on ? 'hidden' : '');
 
   onMount(() => {
-    let reset: ReturnType<typeof setTimeout> | undefined;
-    if (hidden) {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    if (stage === 0) {
       holdDarkBackground(true);
+      lockScroll(true);
       // Wait a frame so the hidden state is painted before the fade starts
-      requestAnimationFrame(() => requestAnimationFrame(() => (hidden = false)));
-      reset = setTimeout(() => holdDarkBackground(false), FADE + 100);
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          stage = 1;
+          timers.push(
+            setTimeout(() => (stage = 2), FADE),
+            setTimeout(() => (stage = 3), FADE + TEXT_FADE),
+            setTimeout(() => {
+              stage = 4;
+              lockScroll(false);
+              holdDarkBackground(false);
+            }, FADE + TEXT_FADE + BAR_SLIDE)
+          );
+        })
+      );
     }
     return () => {
-      clearTimeout(reset);
+      timers.forEach(clearTimeout);
       holdDarkBackground(false);
+      lockScroll(false);
     };
   });
 
@@ -67,7 +86,7 @@
 <ColorTrigger/>
 
 <!-- Page -->
-<div class="text-dtext font-serif transition-opacity" class:opacity-0={hidden || leaving} style:transition-duration="{FADE}ms">
+<div class="text-dtext font-serif transition-opacity" class:opacity-0={stage < 1 || leaving} style:transition-duration="{FADE}ms">
 
   <!-- Home -->
   <section class="min-h-svh bg-lbackground" id="home">
@@ -75,6 +94,8 @@
       sectionName="Home"
       home
       onHome={toHome}
+      raised={stage < 3}
+      slideMs={BAR_SLIDE}
       headerColor="primary"
       sectionLink="contact"
       linkText="Contact"
@@ -82,7 +103,11 @@
     />
 
     <div class="flex-1 overflow-y-auto px-4 py-6">
-      <div class="pt-24 text-center md:pt-40 short:pt-10">
+      <div
+        class="pt-24 text-center transition-opacity md:pt-40 short:pt-10"
+        class:opacity-0={stage < 2}
+        style:transition-duration="{TEXT_FADE}ms"
+      >
         <h1 class="mb-6 text-4xl font-bold md:text-8xl short:mb-3 short:text-5xl">{info.myName}</h1>
         <p class="mb-8 text-2xl md:text-6xl short:mb-4 short:text-3xl">{info.myTagline}</p>
         <Icons {info} />

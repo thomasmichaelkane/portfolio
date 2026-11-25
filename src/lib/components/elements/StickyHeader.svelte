@@ -11,10 +11,17 @@
   export let home = false;
   /** Click handler for the home icon (e.g. to play a transition first) */
   export let onHome: ((e: MouseEvent) => void) | undefined = undefined;
+  /** Hold the bar above the top of the screen; set false to slide it down */
+  export let raised = false;
+  export let slideMs = 500;
   
 </script>
 
-<div class="sticky top-0 z-50 h-12 md:h-18 short:h-12 bg-{headerColor}">
+<div
+  class="sticky top-0 z-50 h-12 md:h-18 short:h-12 bg-{headerColor} transition-transform ease-out"
+  class:-translate-y-full={raised}
+  style:transition-duration="{slideMs}ms"
+>
   <div class="mx-auto px-4 sm:px-6 lg:px-8 py-2 h-full flex justify-between items-center">
     {#if home}
       <a
