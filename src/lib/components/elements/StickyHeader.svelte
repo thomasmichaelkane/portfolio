@@ -9,14 +9,14 @@
   
 </script>
 
-<div class="sticky top-0 z-50 h-14 md:h-18 bg-{headerColor}">
+<div class="sticky top-0 z-50 h-12 md:h-18 short:h-12 bg-{headerColor}">
   <div class="mx-auto px-4 sm:px-6 lg:px-8 py-2 h-full flex justify-between items-center">
-    <h2 class="text-ltext text-3xl md:text-5xl">{sectionName}</h2>
+    <h2 class="text-ltext text-2xl md:text-5xl short:text-3xl">{sectionName}</h2>
     {#if sectionLink}
-      <div class="flex space-x-8 text-xl md:text-3xl">
+      <div class="flex space-x-8 text-lg md:text-3xl short:text-lg">
         <button onclick={() => smoothScrollTo(sectionLink, 1500)} class="text-ltext cursor-pointer hover:underline transition-all duration-300 ease-in-out">
           {linkText}
-          <i class="text-lg md:text-2xl fa fa-arrow-{arrowDirection}"></i>
+          <i class="text-base md:text-2xl short:text-base fa fa-arrow-{arrowDirection}"></i>
         </button>
       </div>
     {/if}

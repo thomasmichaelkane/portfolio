@@ -11,6 +11,6 @@
     rel="noopener noreferrer"
     aria-label={name}
   >
-    <i class="text-4xl fab fa-{name}"></i>
+    <i class="text-3xl md:text-4xl fab fa-{name}"></i>
   </a>
 </div>

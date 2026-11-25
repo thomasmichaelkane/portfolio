@@ -17,11 +17,11 @@
 <div class="bg-lbackground bg-opacity-10 border-2 border-cborder backdrop-blur-sm overflow-hidden hover:bg-opacity-20 transition-all duration-300 transform md:hover:scale-105 shadow-lg">
   <div class="flex flex-col sm:flex-row">
     <!-- Project Image -->
-    <div class="relative overflow-hidden sm:w-1/3">
+    <div class="relative overflow-hidden sm:flex sm:w-1/3 sm:items-center lg:block">
       <img
         src={imageSrc}
         alt={name}
-        class="w-full h-auto sm:h-full object-cover"
+        class="w-full h-auto lg:h-full lg:object-cover"
       />
       <div class="absolute inset-0 bg-ctext/20 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
     </div>
@@ -29,8 +29,8 @@
     <!-- Project Content -->
     <div class="p-4 md:p-6 sm:w-2/3 flex flex-col justify-between">
       <div>
-        <h3 class="text-3xl md:text-4xl font-bold mb-3 text-ctext">{name}</h3>
-        <p class="text-lg md:text-2xl text-ctext mb-6 leading-relaxed">{description}</p>
+        <h3 class="text-2xl md:text-4xl short:text-2xl font-bold mb-3 text-ctext">{name}</h3>
+        <p class="text-base md:text-2xl short:text-base text-ctext mb-6 leading-relaxed">{description}</p>
         <TechStack stack={techStack}></TechStack>
       </div>
       

@@ -45,8 +45,8 @@
 
     <div class="flex-1 overflow-y-auto px-4 py-6">
       <div class="pt-24 text-center md:pt-40 short:pt-10">
-        <h1 class="mb-6 text-5xl font-bold md:text-8xl short:mb-3 short:text-6xl">{info.myName}</h1>
-        <p class="mb-8 text-3xl md:text-6xl short:mb-4 short:text-4xl">{info.myTagline}</p>
+        <h1 class="mb-6 text-4xl font-bold md:text-8xl short:mb-3 short:text-5xl">{info.myName}</h1>
+        <p class="mb-8 text-2xl md:text-6xl short:mb-4 short:text-3xl">{info.myTagline}</p>
         <Icons {info} />
       </div>
     </div>
@@ -61,12 +61,12 @@
         <div class="space-y-8 md:pl-5">
 
           <div class="p-3">
-            <h3 class="mb-6 text-4xl font-bold md:mb-10 md:text-5xl">Hello!</h3>
-            <p class="mb-6 text-lg leading-relaxed md:text-2xl">
+            <h3 class="mb-6 text-3xl font-bold md:mb-10 md:text-5xl short:mb-6 short:text-3xl">Hello!</h3>
+            <p class="mb-6 text-base leading-relaxed md:text-2xl short:text-base">
               {info.myBio}
             </p>
           </div>
-          <div class="p-3 text-lg space-y-3 font-mono break-words lg:text-2xl">
+          <div class="p-3 text-base space-y-3 font-mono break-words lg:text-2xl short:text-base">
             <p>email: {info.myEmail}</p>
             <p>location: London</p>
           </div>
@@ -74,11 +74,11 @@
         
         <div class="space-y-8 font-mono md:mt-8">
           <div class="p-3">
-            <h4 class="mb-4 text-2xl font-semibold">tech</h4>
+            <h4 class="mb-4 text-xl font-semibold md:text-2xl short:text-xl">tech</h4>
             <Tech />
           </div>
           <div class="p-3">
-            <h4 class="mb-8 text-2xl font-semibold">aws journey</h4>
+            <h4 class="mb-6 text-xl font-semibold md:mb-8 md:text-2xl short:mb-6 short:text-xl">aws journey</h4>
             <Certifications />
           </div>
         </div>
@@ -124,7 +124,7 @@
     <div class="flex flex-1 flex-col px-4 py-6">
       <div class="flex flex-1 items-center justify-center">
         <div class="mx-auto max-w-2xl text-center">
-          <h1 class="mb-8 text-3xl font-bold leading-tight md:text-6xl">
+          <h1 class="mb-8 text-2xl font-bold leading-tight md:text-6xl short:text-4xl">
             If you're 
             <span class="text-primary">interested</span>, 
             please get in touch.
@@ -133,7 +133,7 @@
           <div class="relative mb-3 block sm:mr-2 sm:inline-block">
             <button 
               on:click={() => copyTextStore.copyToClipboard(info.myEmail)}
-              class="cursor-pointer rounded-lg bg-primary w-full px-6 py-4 text-xl font-semibold sm:w-auto md:px-8 md:text-2xl text-ltext shadow-lg transition-all duration-300 hover:scale-105 hover:opacity-80 hover:shadow-xl"
+              class="cursor-pointer rounded-lg bg-primary w-full px-6 py-3 text-lg font-semibold sm:w-auto md:px-8 md:py-4 md:text-2xl short:py-3 short:text-lg text-ltext shadow-lg transition-all duration-300 hover:scale-105 hover:opacity-80 hover:shadow-xl"
             >
               Copy my email
             </button>
@@ -151,7 +151,7 @@
           <div class="relative mb-3 block sm:mr-2 sm:inline-block">
             <button 
               on:click={() => downloadFile(`${info.cvFilename}`)}
-              class="cursor-pointer rounded-lg bg-secondary w-full px-6 py-4 text-xl font-semibold sm:w-auto md:px-8 md:text-2xl text-ltext shadow-lg transition-all duration-300 hover:scale-105 hover:opacity-80 hover:shadow-xl"
+              class="cursor-pointer rounded-lg bg-secondary w-full px-6 py-3 text-lg font-semibold sm:w-auto md:px-8 md:py-4 md:text-2xl short:py-3 short:text-lg text-ltext shadow-lg transition-all duration-300 hover:scale-105 hover:opacity-80 hover:shadow-xl"
             >
               Download my CV
             </button>
