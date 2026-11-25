@@ -31,9 +31,12 @@
   const OBSTACLE_SPACING = 16; // minimum clear space around obstacles
   const APP_LIGHT_RADIUS = 240; // how far an app's glow and ripples reach
   const MOUSE_LIGHT_RADIUS = 130;
-  const APPEAR_MIN_DELAY = 250; // ms before the first app can appear
-  const APPEAR_SPREAD = 900; // apps appear at random times within this window
-  const APPEAR_RATE = 3; // how quickly each app fades in once it starts
+  // Entrance: apps appear one at a time in a random order, in ms
+  const APPEAR_FIRST = 300; // earliest the first app appears
+  const APPEAR_GAP = 700; // minimum time between one app and the next
+  const APPEAR_JITTER = 600; // random extra added to each wait
+  const APPEAR_RATE = 1; // how quickly each app fades in (about 3s to fully show)
+  const EXTRAS_AFTER = 1200; // children (e.g. the home link) appear this long after the last app
 
   interface Body {
     x: number;
@@ -55,6 +58,7 @@
   let items: HTMLDivElement[] = $state([]);
   let active: number | null = $state(null);
   let ready = $state(false);
+  let extrasShown = $state(false);
 
   onMount(() => {
     const ctx = canvas.getContext('2d')!;
@@ -63,9 +67,22 @@
       phase: Math.random() * Math.PI * 2,
       calm: 0,
       appear: 0,
-      appearAt: APPEAR_MIN_DELAY + Math.random() * APPEAR_SPREAD,
+      appearAt: 0,
       rgb: hexToRgb(apps[i].accent)
     }));
+
+    // Schedule the entrance: shuffle the order, then space each app out
+    const order = bodies.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    let at = APPEAR_FIRST + Math.random() * APPEAR_JITTER;
+    for (const i of order) {
+      bodies[i].appearAt = at;
+      at += APPEAR_GAP + Math.random() * APPEAR_JITTER;
+    }
+    const lastAppear = Math.max(...bodies.map((b) => b.appearAt));
 
     // Touch screens always show names, so apps there always need room for them
     const touch = window.matchMedia('(hover: none)').matches;
@@ -179,6 +196,7 @@
       render(0);
       observer.observe(container);
       ready = true;
+      extrasShown = true;
       return () => {
         observer.disconnect();
         container.removeEventListener('pointermove', onPointerMove);
@@ -305,9 +323,11 @@
     observer.observe(container);
     ready = true;
     frame = requestAnimationFrame(step);
+    const extrasTimer = setTimeout(() => (extrasShown = true), lastAppear + EXTRAS_AFTER);
 
     return () => {
       cancelAnimationFrame(frame);
+      clearTimeout(extrasTimer);
       observer.disconnect();
       container.removeEventListener('pointermove', onPointerMove);
       container.removeEventListener('pointerleave', onPointerLeave);
@@ -325,7 +345,14 @@
     aria-hidden="true"
   ></canvas>
 
-  {@render children?.()}
+  <!-- Extras fade in after the apps; inert (not clickable or focusable) until then -->
+  <div
+    class="pointer-events-none absolute inset-0 transition-opacity duration-1000 [&>*]:pointer-events-auto"
+    class:opacity-0={!extrasShown}
+    inert={!extrasShown}
+  >
+    {@render children?.()}
+  </div>
 
   {#each apps as app, i}
     <div

@@ -5,7 +5,7 @@
   // Timings for the hand-off to /apps, in ms
   const OTHERS_FADE = 250; // name and other links fade out
   const APPS_HOLD = 400; // "apps" lingers this long...
-  const APPS_FADE = 650; // ...then fades out while the dots fade in
+  const APPS_FADE = 1200; // ...then fades out while the dots fade in
 
   let leaving = $state(false);
   let canvas: HTMLCanvasElement;
