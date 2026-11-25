@@ -6,7 +6,7 @@
   interface AppInfo {
     name: string;
     logoSrc: string;
-    playStoreUrl: string;
+    playStoreUrl: string | null;
     accent: string; // hex colour of the app's glow on the background
   }
 
@@ -106,6 +106,7 @@
     let W = 0;
     let H = 0;
     let edge = 16; // keep apps this far from the page edges
+    const TOOLTIP_ROOM = 44; // extra space at the top for an app's "coming soon" tooltip
 
     const measure = () => {
       W = container.clientWidth;
@@ -130,7 +131,7 @@
         b.h = el.offsetHeight;
         b.r = Math.max(b.w, b.h) / 2;
         b.x = Math.min(Math.max(b.x, edge), Math.max(W - b.w - edge, edge));
-        b.y = Math.min(Math.max(b.y, edge), Math.max(H - b.h - edge, edge));
+        b.y = Math.min(Math.max(b.y, edge + TOOLTIP_ROOM), Math.max(H - b.h - edge, edge + TOOLTIP_ROOM));
       });
     };
 
@@ -213,7 +214,7 @@
     bodies.forEach((b, i) => {
       for (let attempt = 0; attempt < 100; attempt++) {
         b.x = edge + Math.random() * Math.max(W - b.w - 2 * edge, 0);
-        b.y = edge + Math.random() * Math.max(H - b.h - 2 * edge, 0);
+        b.y = edge + TOOLTIP_ROOM + Math.random() * Math.max(H - b.h - 2 * edge - TOOLTIP_ROOM, 0);
         const cx = b.x + b.w / 2;
         const cy = b.y + b.h / 2;
         const clear =
@@ -266,7 +267,7 @@
 
         // Bounce softly off the edges
         if (b.x < edge) { b.x = edge; b.vx = Math.abs(b.vx); }
-        if (b.y < edge) { b.y = edge; b.vy = Math.abs(b.vy); }
+        if (b.y < edge + TOOLTIP_ROOM) { b.y = edge + TOOLTIP_ROOM; b.vy = Math.abs(b.vy); }
         if (b.x > W - b.w - edge) { b.x = W - b.w - edge; b.vx = -Math.abs(b.vx); }
         if (b.y > H - b.h - edge) { b.y = H - b.h - edge; b.vy = -Math.abs(b.vy); }
       });

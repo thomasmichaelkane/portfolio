@@ -42,6 +42,8 @@
   const onScroll = () => (atTop = window.scrollY <= 0);
 
   onMount(() => {
+    // Gently snap to each section's start (its top bar) when scrolling stops nearby
+    document.documentElement.style.scrollSnapType = 'y proximity';
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -65,6 +67,7 @@
       );
     }
     return () => {
+      document.documentElement.style.scrollSnapType = '';
       window.removeEventListener('scroll', onScroll);
       timers.forEach(clearTimeout);
       holdDarkBackground(false);
@@ -97,7 +100,7 @@
 <div class="text-dtext font-serif transition-opacity" class:opacity-0={stage < 1 || leaving} style:transition-duration="{leaving ? FADE_OUT : FADE_IN}ms">
 
   <!-- Home -->
-  <section class="relative min-h-svh bg-lbackground" id="home">
+  <section class="relative min-h-svh snap-start bg-lbackground" id="home">
     <StickyHeader
       sectionName="Home"
       home
@@ -145,7 +148,7 @@
   </section>
 
   <!-- About -->
-  <section class="min-h-screen bg-lbackground" id="about">
+  <section class="min-h-screen snap-start bg-lbackground" id="about">
     <StickyHeader sectionName="About" headerColor="secondary" />
 
     <div class="mx-auto px-4 pt-10 pb-8 md:px-8 md:pt-16">
@@ -180,7 +183,7 @@
   </section>
 
   <!-- Projects -->
-  <section class="min-h-screen bg-lbackground" id="projects">
+  <section class="min-h-screen snap-start bg-lbackground" id="projects">
     <StickyHeader sectionName="Projects" headerColor="tertiary" />
 
     <div class="px-2 pt-10 pb-20 md:px-4 md:pt-16 md:pb-35">
@@ -203,7 +206,7 @@
   </section>
 
   <!-- Contact -->
-  <section class="flex min-h-screen flex-col bg-lbackground" id="contact">
+  <section class="flex min-h-screen snap-start flex-col bg-lbackground" id="contact">
 
     <StickyHeader
       sectionName="Contact"

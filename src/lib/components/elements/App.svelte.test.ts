@@ -18,6 +18,13 @@ describe('App.svelte', () => {
 		expect(link).toHaveAttribute('target', '_blank');
 	});
 
+	test('without a Play Store link it is not a link and says coming soon', () => {
+		render(App, { props: { ...props, playStoreUrl: null } });
+		expect(screen.queryByRole('link')).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Hestia, coming soon' })).toBeInTheDocument();
+		expect(screen.getByText('coming soon')).toBeInTheDocument();
+	});
+
 	test('name is hidden until active', async () => {
 		const { rerender } = render(App, { props });
 		expect(screen.getByText('Hestia')).toHaveClass('opacity-0');
