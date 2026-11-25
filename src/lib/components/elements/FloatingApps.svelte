@@ -1,11 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import App from './App.svelte';
+  import { drawShimmer, hexToRgb, type LightSource } from '$lib/utils/shimmer';
 
   interface AppInfo {
     name: string;
     logoSrc: string;
     playStoreUrl: string;
+    accent: string; // hex colour of the app's glow on the background
   }
 
   let { apps }: { apps: AppInfo[] } = $props();
@@ -18,6 +20,8 @@
   const TILT_DEG = 4; // rotation wobble amplitude
   const SETTLE_RATE = 3.5; // how quickly a hovered app comes to rest
   const SPACING = 32; // minimum clear space kept between apps
+  const APP_LIGHT_RADIUS = 240; // how far an app's glow and ripples reach
+  const MOUSE_LIGHT_RADIUS = 170;
 
   interface Body {
     x: number;
@@ -29,47 +33,101 @@
     r: number; // collision radius, covering the logo and name
     phase: number;
     calm: number; // 0 = floating freely, 1 = fully settled
+    rgb: [number, number, number];
   }
 
   let container: HTMLDivElement;
+  let canvas: HTMLCanvasElement;
   let items: HTMLDivElement[] = $state([]);
   let active: number | null = $state(null);
   let ready = $state(false);
 
   onMount(() => {
-    const bodies: Body[] = items.map(() => ({
+    const ctx = canvas.getContext('2d')!;
+    const bodies: Body[] = items.map((_, i) => ({
       x: 0, y: 0, vx: 0, vy: 0, w: 0, h: 0, r: 0,
       phase: Math.random() * Math.PI * 2,
-      calm: 0
+      calm: 0,
+      rgb: hexToRgb(apps[i].accent)
     }));
-    let W = container.clientWidth;
-    let H = container.clientHeight;
+
+    // Pointer as a light: eased position, fades in/out, ripples with speed
+    const mouse = { x: 0, y: 0, targetX: 0, targetY: 0, presence: 0, inside: false, speed: 0 };
+
+    let W = 0;
+    let H = 0;
+    let edge = 16; // keep apps this far from the page edges
 
     const measure = () => {
       W = container.clientWidth;
       H = container.clientHeight;
+      edge = W < 768 ? 16 : 32;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       items.forEach((el, i) => {
         const b = bodies[i];
         b.w = el.offsetWidth;
         b.h = el.offsetHeight;
         b.r = Math.max(b.w, b.h) / 2;
-        b.x = Math.min(Math.max(b.x, 0), Math.max(W - b.w, 0));
-        b.y = Math.min(Math.max(b.y, 0), Math.max(H - b.h, 0));
+        b.x = Math.min(Math.max(b.x, edge), Math.max(W - b.w - edge, edge));
+        b.y = Math.min(Math.max(b.y, edge), Math.max(H - b.h - edge, edge));
       });
     };
+
+    const bob = (b: Body, t: number) => Math.sin(t * 1.1 + b.phase) * BOB_PX * (1 - b.calm);
 
     const render = (t: number) => {
       bodies.forEach((b, i) => {
-        const free = 1 - b.calm;
-        const bob = Math.sin(t * 1.1 + b.phase) * BOB_PX * free;
-        const tilt = Math.sin(t * 0.7 + b.phase) * TILT_DEG * free;
-        items[i].style.transform = `translate3d(${b.x}px, ${b.y + bob}px, 0) rotate(${tilt}deg)`;
+        const tilt = Math.sin(t * 0.7 + b.phase) * TILT_DEG * (1 - b.calm);
+        items[i].style.transform = `translate3d(${b.x}px, ${b.y + bob(b, t)}px, 0) rotate(${tilt}deg)`;
       });
+
+      // Lights sit on the centre of each logo (the square top part of the app)
+      const lights: LightSource[] = bodies.map((b) => ({
+        x: b.x + b.w / 2,
+        y: b.y + b.w / 2 + bob(b, t),
+        radius: APP_LIGHT_RADIUS,
+        strength: 0.55 + 0.45 * b.calm, // brighter when settled
+        ripple: 1 - 0.85 * b.calm, // water stills when settled
+        rgb: b.rgb
+      }));
+      if (mouse.presence > 0.01) {
+        lights.push({
+          x: mouse.x,
+          y: mouse.y,
+          radius: MOUSE_LIGHT_RADIUS,
+          strength: 0.6 * mouse.presence,
+          ripple: Math.min(mouse.speed / 300, 1) * mouse.presence,
+          rgb: [240, 236, 230]
+        });
+      }
+      drawShimmer(ctx, W, H, t, lights);
     };
+
+    const onPointerMove = (e: PointerEvent) => {
+      const rect = container.getBoundingClientRect();
+      mouse.targetX = e.clientX - rect.left;
+      mouse.targetY = e.clientY - rect.top;
+      if (!mouse.inside) {
+        mouse.x = mouse.targetX;
+        mouse.y = mouse.targetY;
+      }
+      mouse.inside = true;
+    };
+    const onPointerLeave = () => (mouse.inside = false);
+    container.addEventListener('pointermove', onPointerMove);
+    container.addEventListener('pointerleave', onPointerLeave);
+
+    const observer = new ResizeObserver(() => {
+      measure();
+      render(performance.now() / 1000);
+    });
 
     measure();
 
-    // Reduced motion: lay the apps out in a centred row and don't animate
+    // Reduced motion: centred row, a still background, no animation
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const gap = 48;
       const total = bodies.reduce((sum, b) => sum + b.w, 0) + gap * (bodies.length - 1);
@@ -81,15 +139,20 @@
         x += b.w + gap;
       });
       render(0);
+      observer.observe(container);
       ready = true;
-      return;
+      return () => {
+        observer.disconnect();
+        container.removeEventListener('pointermove', onPointerMove);
+        container.removeEventListener('pointerleave', onPointerLeave);
+      };
     }
 
     // Random, non-overlapping starting positions with random headings
     bodies.forEach((b, i) => {
       for (let attempt = 0; attempt < 100; attempt++) {
-        b.x = Math.random() * Math.max(W - b.w, 0);
-        b.y = Math.random() * Math.max(H - b.h, 0);
+        b.x = edge + Math.random() * Math.max(W - b.w - 2 * edge, 0);
+        b.y = edge + Math.random() * Math.max(H - b.h - 2 * edge, 0);
         const clear = bodies.slice(0, i).every(
           (o) => Math.hypot(b.x + b.w / 2 - (o.x + o.w / 2), b.y + b.h / 2 - (o.y + o.h / 2)) > b.r + o.r + SPACING
         );
@@ -107,6 +170,15 @@
     const step = (now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
+
+      // Ease the pointer light towards the pointer, tracking its speed for the wake
+      const ease = 1 - Math.exp(-dt * 10);
+      const mx = (mouse.targetX - mouse.x) * ease;
+      const my = (mouse.targetY - mouse.y) * ease;
+      mouse.x += mx;
+      mouse.y += my;
+      mouse.speed += (Math.hypot(mx, my) / (dt || 1 / 60) - mouse.speed) * (1 - Math.exp(-dt * 4));
+      mouse.presence += ((mouse.inside ? 1 : 0) - mouse.presence) * (1 - Math.exp(-dt * 3));
 
       bodies.forEach((b, i) => {
         // Ease towards settled while hovered, and back to floating after
@@ -126,10 +198,10 @@
         b.y += b.vy * dt * free;
 
         // Bounce softly off the edges
-        if (b.x < 0) { b.x = 0; b.vx = Math.abs(b.vx); }
-        if (b.y < 0) { b.y = 0; b.vy = Math.abs(b.vy); }
-        if (b.x > W - b.w) { b.x = W - b.w; b.vx = -Math.abs(b.vx); }
-        if (b.y > H - b.h) { b.y = H - b.h; b.vy = -Math.abs(b.vy); }
+        if (b.x < edge) { b.x = edge; b.vx = Math.abs(b.vx); }
+        if (b.y < edge) { b.y = edge; b.vy = Math.abs(b.vy); }
+        if (b.x > W - b.w - edge) { b.x = W - b.w - edge; b.vx = -Math.abs(b.vx); }
+        if (b.y > H - b.h - edge) { b.y = H - b.h - edge; b.vy = -Math.abs(b.vy); }
       });
 
       // Apps bump off each other; a settled app stays put
@@ -164,15 +236,15 @@
     };
 
     render(0);
+    observer.observe(container);
     ready = true;
     frame = requestAnimationFrame(step);
-
-    const observer = new ResizeObserver(measure);
-    observer.observe(container);
 
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
+      container.removeEventListener('pointermove', onPointerMove);
+      container.removeEventListener('pointerleave', onPointerLeave);
     };
   });
 </script>
@@ -182,6 +254,8 @@
   class="relative h-full w-full overflow-hidden transition-opacity duration-700"
   class:opacity-0={!ready}
 >
+  <canvas bind:this={canvas} class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
+
   {#each apps as app, i}
     <div
       bind:this={items[i]}
@@ -192,7 +266,7 @@
       onfocusin={() => (active = i)}
       onfocusout={() => (active = null)}
     >
-      <App {...app} active={active === i} />
+      <App name={app.name} logoSrc={app.logoSrc} playStoreUrl={app.playStoreUrl} active={active === i} />
     </div>
   {/each}
 </div>
