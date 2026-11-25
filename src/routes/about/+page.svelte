@@ -25,9 +25,10 @@
   // Arriving from the home page, in stages (each starts when the last ends):
   //   0 hidden -> 1 the page fades up out of the dark -> 2 the text fades in
   //   -> 3 the top bar slides down -> 4 done, scrolling unlocked
-  const FADE = 900; // ms, page fade in (and out when going back home)
-  const TEXT_FADE = 400; // ms
-  const BAR_SLIDE = 500; // ms
+  const FADE_IN = 650; // ms
+  const TEXT_FADE = 300; // ms
+  const BAR_SLIDE = 400; // ms
+  const FADE_OUT = 900; // ms, going back home
   let stage = page.state.fadeIn === true ? 0 : 4;
   let leaving = false;
 
@@ -46,13 +47,13 @@
         requestAnimationFrame(() => {
           stage = 1;
           timers.push(
-            setTimeout(() => (stage = 2), FADE),
-            setTimeout(() => (stage = 3), FADE + TEXT_FADE),
+            setTimeout(() => (stage = 2), FADE_IN),
+            setTimeout(() => (stage = 3), FADE_IN + TEXT_FADE),
             setTimeout(() => {
               stage = 4;
               lockScroll(false);
               holdDarkBackground(false);
-            }, FADE + TEXT_FADE + BAR_SLIDE)
+            }, FADE_IN + TEXT_FADE + BAR_SLIDE)
           );
         })
       );
@@ -72,7 +73,7 @@
     if (leaving) return;
     leaving = true;
     holdDarkBackground(true);
-    setTimeout(() => goto('/', { state: { fromAbout: true } }), FADE);
+    setTimeout(() => goto('/', { state: { fromAbout: true } }), FADE_OUT);
   }
 </script>
 
@@ -86,7 +87,7 @@
 <ColorTrigger/>
 
 <!-- Page -->
-<div class="text-dtext font-serif transition-opacity" class:opacity-0={stage < 1 || leaving} style:transition-duration="{FADE}ms">
+<div class="text-dtext font-serif transition-opacity" class:opacity-0={stage < 1 || leaving} style:transition-duration="{leaving ? FADE_OUT : FADE_IN}ms">
 
   <!-- Home -->
   <section class="min-h-svh bg-lbackground" id="home">

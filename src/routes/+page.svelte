@@ -9,36 +9,20 @@
   const OTHERS_FADE = 250; // the name and other link fade out
   const CHOSEN_HOLD = 400; // the clicked link lingers this long...
   const CHOSEN_FADE = 1200; // ...then fades out (with /apps, while the dots fade in)
-  const ARRIVE_FADE = 900; // content fading back in when returning from /apps
-  const PAUSE = CHOSEN_HOLD - OTHERS_FADE; // gap between the clicked link and the rest
+  const ARRIVE_FADE = 900; // content fading back in when returning from another page
 
   type Destination = 'about' | 'apps';
   let leavingTo: Destination | null = $state(null);
   let canvas: HTMLCanvasElement;
   let dotsFrame = 0;
 
-  // Returning from /apps (which has already faded out), fade the content in
-  let arriving = $state(page.state.fromApps === true);
-
-  // Returning from /about: the reverse of leaving for it. "about" fades in
-  // slowly first, then the name and "apps" fade in quickly
-  let revealFrom: Destination | null = $state(page.state.fromAbout ? 'about' : null);
-  let revealPending = $state(page.state.fromAbout === true);
+  // Returning from /apps or /about (which have already faded out), fade the content in
+  let arriving = $state(page.state.fromApps === true || page.state.fromAbout === true);
 
   onMount(() => {
     // Wait a frame so the hidden state is painted before the fade starts
-    const nextFrame = (fn: () => void) => requestAnimationFrame(() => requestAnimationFrame(fn));
-    if (arriving) nextFrame(() => (arriving = false));
-    let done: ReturnType<typeof setTimeout> | undefined;
-    if (revealPending) {
-      nextFrame(() => (revealPending = false));
-      // Once revealed, drop the staggered timings so hovers respond normally
-      done = setTimeout(() => (revealFrom = null), CHOSEN_FADE + PAUSE + OTHERS_FADE + 100);
-    }
-    return () => {
-      cancelAnimationFrame(dotsFrame);
-      clearTimeout(done);
-    };
+    if (arriving) requestAnimationFrame(() => requestAnimationFrame(() => (arriving = false)));
+    return () => cancelAnimationFrame(dotsFrame);
   });
 
   // Draw the same dot field as /apps (no lights yet) so the hand-off is seamless
@@ -69,19 +53,10 @@
     setTimeout(() => goto(`/${to}`, { state }), CHOSEN_HOLD + CHOSEN_FADE);
   }
 
-  // Leaving: the clicked link lingers and fades slowly; everything else fades quickly.
-  // Revealing (back from a page): the reverse, so that link fades in first.
+  // The clicked link lingers and fades slowly; everything else fades quickly
   type Part = Destination | 'name';
-  const delay = (part: Part) => {
-    if (leavingTo) return leavingTo === part ? `${CHOSEN_HOLD}ms` : '0ms';
-    if (revealFrom) return revealFrom === part ? '0ms' : `${CHOSEN_FADE + PAUSE}ms`;
-    return '0ms';
-  };
-  const duration = (part: Part) => {
-    const chosen = leavingTo ?? revealFrom;
-    return chosen === part ? `${CHOSEN_FADE}ms` : `${OTHERS_FADE}ms`;
-  };
-  const hiddenNow = $derived(leavingTo !== null || revealPending);
+  const delay = (part: Part) => (leavingTo === part ? `${CHOSEN_HOLD}ms` : '0ms');
+  const duration = (part: Part) => (leavingTo === part ? `${CHOSEN_FADE}ms` : `${OTHERS_FADE}ms`);
 </script>
 
 <svelte:head>
@@ -115,7 +90,7 @@
   >
     <h1
       class="mb-10 text-6xl font-medium transition-opacity md:mb-14 md:text-8xl"
-      class:opacity-0={hiddenNow}
+      class:opacity-0={leavingTo}
       style:transition-delay={delay('name')}
       style:transition-duration={duration('name')}
     >
@@ -129,7 +104,7 @@
           onclick={(e) => leave(e, link)}
           class="transition-[color,opacity] hover:text-neutral-200"
           class:text-neutral-400={leavingTo !== link}
-          class:opacity-0={hiddenNow}
+          class:opacity-0={leavingTo}
           style:transition-delay={delay(link)}
           style:transition-duration={duration(link)}
         >
