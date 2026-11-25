@@ -37,8 +37,8 @@
       "imageName": "tomkane.png",
       "techStack": ["TypeScript", "SvelteKit", "Vite", "TailwindCSS"],
       "githubUrl": "https://github.com/thomasmichaelkane/portfolio",
-      "buttonType": "site",
-      "buttonLink": "https://tomkane.dev"
+      "buttonType": null,
+      "buttonLink": "#"
     }
   ]
 }

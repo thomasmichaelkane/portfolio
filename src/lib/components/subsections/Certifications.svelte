@@ -7,7 +7,7 @@
   import awsDev from '$lib/assets/aws/dev.png';
 </script>
 
-<div class="flex gap-5 min-h-[140px] overflow-visible">
+<div class="flex flex-wrap gap-3 sm:gap-5 min-h-[100px] sm:min-h-[140px] overflow-visible">
   <CredlyBadge
     badgeId="e935380f-b50a-40d6-a0c2-ef7b1642658f"
     imageSrc={awsCcp}

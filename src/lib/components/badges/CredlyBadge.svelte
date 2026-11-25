@@ -19,6 +19,6 @@
     {alt}
     width={width}
     height={height}
-    class="rounded-lg"
+    class="rounded-lg w-24 h-auto sm:w-[150px]"
   />
 </a>
