@@ -8,6 +8,8 @@ declare global {
 		interface PageState {
 			/** Set when arriving at /apps via the home page transition */
 			fromHome?: boolean;
+			/** Set when arriving at / via the /apps home link transition */
+			fromApps?: boolean;
 		}
 		// interface Platform {}
 	}

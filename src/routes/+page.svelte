@@ -1,14 +1,30 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+  import HomeLink from '$lib/components/elements/HomeLink.svelte';
   import { drawShimmer } from '$lib/utils/shimmer';
 
   // Timings for the hand-off to /apps, in ms
   const OTHERS_FADE = 250; // name and other links fade out
   const APPS_HOLD = 400; // "apps" lingers this long...
   const APPS_FADE = 1200; // ...then fades out while the dots fade in
+  const ARRIVE_FADE = 900; // content fading back in when returning from /apps
 
   let leaving = $state(false);
   let canvas: HTMLCanvasElement;
+  let dotsFrame = 0;
+
+  // Returning from /apps (which has already faded out), fade the content in
+  let arriving = $state(page.state.fromApps === true);
+
+  onMount(() => {
+    if (arriving) {
+      // Wait a frame so the hidden state is painted before the fade starts
+      requestAnimationFrame(() => requestAnimationFrame(() => (arriving = false)));
+    }
+    return () => cancelAnimationFrame(dotsFrame);
+  });
 
   // Draw the same dot field as /apps (no lights yet) so the hand-off is seamless
   function runDots() {
@@ -21,9 +37,9 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const frame = (now: number) => {
       drawShimmer(ctx, W, H, now / 1000, []);
-      requestAnimationFrame(frame);
+      dotsFrame = requestAnimationFrame(frame);
     };
-    requestAnimationFrame(frame);
+    dotsFrame = requestAnimationFrame(frame);
   }
 
   function toApps(e: MouseEvent) {
@@ -53,7 +69,18 @@
     aria-hidden="true"
   ></canvas>
 
-  <div class="soft relative flex flex-col items-center">
+  <!-- The /apps home icon, fading in with the dots so it's already there on arrival -->
+  <HomeLink
+    link={false}
+    class="opacity-0 transition-opacity ease-in {leaving ? 'opacity-100' : ''}"
+    style="transition-delay: {APPS_HOLD}ms; transition-duration: {APPS_FADE}ms"
+  />
+
+  <div
+    class="soft relative flex flex-col items-center transition-opacity"
+    class:opacity-0={arriving}
+    style:transition-duration="{ARRIVE_FADE}ms"
+  >
     <h1
       class="mb-10 text-6xl font-medium transition-opacity md:mb-14 md:text-8xl"
       class:opacity-0={leaving}

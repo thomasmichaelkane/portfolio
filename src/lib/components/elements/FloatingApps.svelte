@@ -12,13 +12,22 @@
 
   // Children are drawn over the background; any marked `data-obstacle` are
   // fixed shapes the apps bounce off (e.g. a corner link)
-  // dotsInstant: show the background straight away (arriving from the home page,
-  // which has already faded the same dots in) instead of fading it in
+  // dotsInstant: show the background (and children) straight away, because the
+  // home page has already faded the same dots in, instead of fading them in.
+  // leaving: fade everything out over fadeOutMs (e.g. before navigating away).
   let {
     apps,
     children,
-    dotsInstant = false
-  }: { apps: AppInfo[]; children?: Snippet; dotsInstant?: boolean } = $props();
+    dotsInstant = false,
+    leaving = false,
+    fadeOutMs = 700
+  }: {
+    apps: AppInfo[];
+    children?: Snippet;
+    dotsInstant?: boolean;
+    leaving?: boolean;
+    fadeOutMs?: number;
+  } = $props();
 
   // Tuning: speeds in px/s, times in seconds
   const MIN_SPEED = 12;
@@ -35,8 +44,7 @@
   const APPEAR_FIRST = 300; // earliest the first app appears
   const APPEAR_GAP = 700; // minimum time between one app and the next
   const APPEAR_JITTER = 600; // random extra added to each wait
-  const APPEAR_RATE = 1; // how quickly each app fades in (about 3s to fully show)
-  const EXTRAS_AFTER = 1200; // children (e.g. the home link) appear this long after the last app
+  const APPEAR_RATE = 3; // how quickly each app fades in once it starts (about 1s)
 
   interface Body {
     x: number;
@@ -58,7 +66,6 @@
   let items: HTMLDivElement[] = $state([]);
   let active: number | null = $state(null);
   let ready = $state(false);
-  let extrasShown = $state(false);
 
   onMount(() => {
     const ctx = canvas.getContext('2d')!;
@@ -82,7 +89,6 @@
       bodies[i].appearAt = at;
       at += APPEAR_GAP + Math.random() * APPEAR_JITTER;
     }
-    const lastAppear = Math.max(...bodies.map((b) => b.appearAt));
 
     // Touch screens always show names, so apps there always need room for them
     const touch = window.matchMedia('(hover: none)').matches;
@@ -196,7 +202,6 @@
       render(0);
       observer.observe(container);
       ready = true;
-      extrasShown = true;
       return () => {
         observer.disconnect();
         container.removeEventListener('pointermove', onPointerMove);
@@ -323,11 +328,9 @@
     observer.observe(container);
     ready = true;
     frame = requestAnimationFrame(step);
-    const extrasTimer = setTimeout(() => (extrasShown = true), lastAppear + EXTRAS_AFTER);
 
     return () => {
       cancelAnimationFrame(frame);
-      clearTimeout(extrasTimer);
       observer.disconnect();
       container.removeEventListener('pointermove', onPointerMove);
       container.removeEventListener('pointerleave', onPointerLeave);
@@ -335,7 +338,12 @@
   });
 </script>
 
-<div bind:this={container} class="relative h-full w-full overflow-hidden">
+<div
+  bind:this={container}
+  class="relative h-full w-full overflow-hidden transition-opacity ease-out"
+  class:opacity-0={leaving}
+  style:transition-duration="{fadeOutMs}ms"
+>
   <canvas
     bind:this={canvas}
     class="pointer-events-none absolute inset-0 h-full w-full"
@@ -345,11 +353,13 @@
     aria-hidden="true"
   ></canvas>
 
-  <!-- Extras fade in after the apps; inert (not clickable or focusable) until then -->
+  <!-- Extras (e.g. the home link) arrive with the dots; inert until shown -->
   <div
-    class="pointer-events-none absolute inset-0 transition-opacity duration-1000 [&>*]:pointer-events-auto"
-    class:opacity-0={!extrasShown}
-    inert={!extrasShown}
+    class="pointer-events-none absolute inset-0 [&>*]:pointer-events-auto"
+    class:transition-opacity={!dotsInstant}
+    class:duration-700={!dotsInstant}
+    class:opacity-0={!ready && !dotsInstant}
+    inert={!ready}
   >
     {@render children?.()}
   </div>
