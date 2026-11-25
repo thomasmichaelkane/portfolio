@@ -11,10 +11,14 @@ const FILTER_ID = 'pixelate-transition';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 // Tuning
-const BLOCK = 6; // pixel size at full strength, in px
-const BLUR = 6; // blur at full strength, in px
-const SPECKLE_DENSITY = 0.3; // share of pixels speckled at full strength
-const SPECKLE_ALPHA = 0.55; // maximum speckle opacity
+const BLOCK = 4; // page pixel size at full strength, in px
+const BLUR = 9; // blur at full strength, in px
+const SPECKLE_BLOCK = 3; // speckle size, in px
+const SPECKLE_DENSITY = 0.3; // share of speckle cells filled at full strength
+const SPECKLE_ALPHA = 0.35; // maximum speckle opacity
+const SPECKLE_SATURATION = [0.12, 0.28]; // muted, so they sit in the grey
+const SPECKLE_LIGHTNESS = [0.42, 0.6];
+const SPECKLE_RAMP = 2; // >1 makes speckles build up slowly, then come in at the end
 const SPECKLE_FPS = 24; // how often the speckles re-scatter
 
 // ---- Pixelate filter --------------------------------------------------------
@@ -92,25 +96,32 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
 
 function scatter() {
 	const canvas = speckleCanvas!;
-	// One canvas pixel per block, stretched to the screen, so speckles sit on the pixel grid
-	const w = Math.ceil(window.innerWidth / BLOCK);
-	const h = Math.ceil(window.innerHeight / BLOCK);
+	// One canvas pixel per speckle, stretched to the screen
+	const w = Math.ceil(window.innerWidth / SPECKLE_BLOCK);
+	const h = Math.ceil(window.innerHeight / SPECKLE_BLOCK);
 	if (canvas.width !== w || canvas.height !== h) {
 		canvas.width = w;
 		canvas.height = h;
 	}
 	const ctx = canvas.getContext('2d')!;
 	const img = ctx.createImageData(w, h);
-	const density = SPECKLE_DENSITY * speckleStrength;
+	const strength = speckleStrength ** SPECKLE_RAMP;
+	const density = SPECKLE_DENSITY * strength;
+	const [sMin, sMax] = SPECKLE_SATURATION;
+	const [lMin, lMax] = SPECKLE_LIGHTNESS;
 	for (let i = 0; i < w * h; i++) {
 		if (Math.random() >= density) continue;
-		// Soft colours: any hue, gentle saturation, light
-		const [r, g, b] = hslToRgb(Math.random() * 360, 0.35 + Math.random() * 0.3, 0.62 + Math.random() * 0.18);
+		// Soft colours: any hue, muted and mid-toned
+		const [r, g, b] = hslToRgb(
+			Math.random() * 360,
+			sMin + Math.random() * (sMax - sMin),
+			lMin + Math.random() * (lMax - lMin)
+		);
 		const o = i * 4;
 		img.data[o] = r;
 		img.data[o + 1] = g;
 		img.data[o + 2] = b;
-		img.data[o + 3] = (0.3 + 0.7 * Math.random()) * SPECKLE_ALPHA * speckleStrength * 255;
+		img.data[o + 3] = (0.3 + 0.7 * Math.random()) * SPECKLE_ALPHA * strength * 255;
 	}
 	ctx.putImageData(img, 0, 0);
 }
@@ -143,7 +154,7 @@ function setSpeckle(strength: number) {
 			'pointer-events:none',
 			'z-index:2147483647',
 			'image-rendering:pixelated',
-			'filter:blur(1px)'
+			'filter:blur(0.6px)'
 		].join(';');
 		document.body.append(speckleCanvas);
 		scatter();
