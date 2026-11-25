@@ -1,13 +1,23 @@
-// Pixelate transition: breaks an element into soft square blocks (or resolves
-// it back from them) by animating an SVG filter. The filter blurs the page so
-// each block takes the average colour of its area, samples one pixel per block,
-// spreads it across the block, then softens the block edges.
+// Pixel-dissolve transition between pages.
+//
+// At full strength the page is broken into small soft pixels (an SVG filter
+// that averages each block's colour), blurred, and speckled all over with
+// flickering random soft colours (a canvas laid over everything). One side of
+// a page change builds up to full strength, the other starts there and clears.
+// Both the filter and the speckle canvas live directly in <body>, outside the
+// app, so they carry on through the navigation.
 
 const FILTER_ID = 'pixelate-transition';
-
-/** Block size both sides of a page-to-page pixelate meet at, in px */
-export const PIXEL_MAX = 40;
 const SVG_NS = 'http://www.w3.org/2000/svg';
+
+// Tuning
+const BLOCK = 6; // pixel size at full strength, in px
+const BLUR = 6; // blur at full strength, in px
+const SPECKLE_DENSITY = 0.3; // share of pixels speckled at full strength
+const SPECKLE_ALPHA = 0.55; // maximum speckle opacity
+const SPECKLE_FPS = 24; // how often the speckles re-scatter
+
+// ---- Pixelate filter --------------------------------------------------------
 
 interface FilterParts {
 	filter: SVGFilterElement;
@@ -18,6 +28,8 @@ interface FilterParts {
 	soften: SVGFEGaussianBlurElement;
 }
 
+let parts: FilterParts | null = null;
+
 // Blurs that repeat the edge colour, so the screen edges don't fade to the page behind
 function makeBlur(result?: string) {
 	const blur = document.createElementNS(SVG_NS, 'feGaussianBlur');
@@ -26,9 +38,6 @@ function makeBlur(result?: string) {
 	return blur;
 }
 
-let parts: FilterParts | null = null;
-
-// The filter lives directly in <body>, outside the app, so it survives navigation
 function ensureFilter(): FilterParts {
 	if (parts && document.body.contains(parts.filter)) return parts;
 
@@ -55,7 +64,7 @@ function ensureFilter(): FilterParts {
 	sample.setAttribute('operator', 'in');
 	const dilate = document.createElementNS(SVG_NS, 'feMorphology'); // grow each into a block
 	dilate.setAttribute('operator', 'dilate');
-	const soften = makeBlur(); // soften the block edges
+	const soften = makeBlur(); // the overall blur
 
 	filter.append(average, flood, tile, repeat, sample, dilate, soften);
 	svg.append(filter);
@@ -65,61 +74,135 @@ function ensureFilter(): FilterParts {
 	return parts;
 }
 
-function setBlock(p: FilterParts, size: number, blur: number) {
+// ---- Speckle overlay --------------------------------------------------------
+
+let speckleCanvas: HTMLCanvasElement | null = null;
+let speckleStrength = 0;
+let speckleFrame = 0;
+let lastScatter = 0;
+
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+	const a = s * Math.min(l, 1 - l);
+	const f = (n: number) => {
+		const k = (n + h / 30) % 12;
+		return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+	};
+	return [f(0) * 255, f(8) * 255, f(4) * 255];
+}
+
+function scatter() {
+	const canvas = speckleCanvas!;
+	// One canvas pixel per block, stretched to the screen, so speckles sit on the pixel grid
+	const w = Math.ceil(window.innerWidth / BLOCK);
+	const h = Math.ceil(window.innerHeight / BLOCK);
+	if (canvas.width !== w || canvas.height !== h) {
+		canvas.width = w;
+		canvas.height = h;
+	}
+	const ctx = canvas.getContext('2d')!;
+	const img = ctx.createImageData(w, h);
+	const density = SPECKLE_DENSITY * speckleStrength;
+	for (let i = 0; i < w * h; i++) {
+		if (Math.random() >= density) continue;
+		// Soft colours: any hue, gentle saturation, light
+		const [r, g, b] = hslToRgb(Math.random() * 360, 0.35 + Math.random() * 0.3, 0.62 + Math.random() * 0.18);
+		const o = i * 4;
+		img.data[o] = r;
+		img.data[o + 1] = g;
+		img.data[o + 2] = b;
+		img.data[o + 3] = (0.3 + 0.7 * Math.random()) * SPECKLE_ALPHA * speckleStrength * 255;
+	}
+	ctx.putImageData(img, 0, 0);
+}
+
+function speckleLoop(now: number) {
+	if (speckleStrength <= 0.001) {
+		speckleCanvas?.remove();
+		speckleCanvas = null;
+		speckleFrame = 0;
+		return;
+	}
+	if (now - lastScatter > 1000 / SPECKLE_FPS) {
+		lastScatter = now;
+		scatter();
+	}
+	speckleFrame = requestAnimationFrame(speckleLoop);
+}
+
+function setSpeckle(strength: number) {
+	speckleStrength = strength;
+	if (strength <= 0.001 && !speckleCanvas) return;
+	if (!speckleCanvas) {
+		speckleCanvas = document.createElement('canvas');
+		speckleCanvas.setAttribute('aria-hidden', 'true');
+		speckleCanvas.style.cssText = [
+			'position:fixed',
+			'inset:0',
+			'width:100vw',
+			'height:100vh',
+			'pointer-events:none',
+			'z-index:2147483647',
+			'image-rendering:pixelated',
+			'filter:blur(1px)'
+		].join(';');
+		document.body.append(speckleCanvas);
+		scatter();
+	}
+	if (!speckleFrame) speckleFrame = requestAnimationFrame(speckleLoop);
+}
+
+// ---- Public API -------------------------------------------------------------
+
+/**
+ * Set the dissolve to a given strength: 0 = normal page, 1 = fully dissolved.
+ * Blocks at the screen edge come out partly see-through, so the page behind is
+ * coloured to match (`background`) while dissolved, then reset.
+ */
+export function setDissolve(el: HTMLElement, strength: number, background?: string) {
+	const root = document.documentElement;
+	setSpeckle(strength);
+
+	if (strength <= 0.001) {
+		el.style.filter = '';
+		root.style.backgroundColor = '';
+		return;
+	}
+
+	const p = ensureFilter();
+	// Pixels reach full size early, so the pixelation stays small throughout
+	const size = Math.max(2, Math.round(1 + (BLOCK - 1) * Math.min(strength * 2, 1)));
 	const half = size / 2;
+	// Only the visible screen (plus one block either side, so edge blocks are whole)
+	// is filtered, which keeps long pages cheap
+	p.filter.setAttribute('x', String(-size));
+	p.filter.setAttribute('y', String(-size));
+	p.filter.setAttribute('width', String(window.innerWidth + 2 * size));
+	p.filter.setAttribute('height', String(window.innerHeight + 2 * size));
 	p.average.setAttribute('stdDeviation', String(size / 3));
-	p.soften.setAttribute('stdDeviation', String(blur));
 	p.flood.setAttribute('x', String(half));
 	p.flood.setAttribute('y', String(half));
 	p.tile.setAttribute('width', String(size));
 	p.tile.setAttribute('height', String(size));
 	p.dilate.setAttribute('radius', String(half));
-}
+	p.soften.setAttribute('stdDeviation', String(BLUR * strength));
 
-const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
-
-export interface PixelateOptions {
-	from: number; // block size in px at the start (1 = sharp)
-	to: number; // block size in px at the end
-	blurFrom?: number; // blur in px at the start
-	blurTo?: number; // blur in px at the end
-	duration: number; // ms
-	background?: string; // page colour behind the element, so edge blocks blend in
-}
-
-/**
- * Apply the pixelate filter at a fixed block size and blur (e.g. before revealing
- * a page). Blocks at the screen edge come out partly see-through, so the page
- * behind is coloured to match while pixelated, then reset once sharp again.
- */
-export function setPixelated(el: HTMLElement, size: number, blur = 0, background?: string) {
-	const p = ensureFilter();
-	const root = document.documentElement;
-	if (size <= 1.5) {
-		el.style.filter = '';
-		root.style.backgroundColor = '';
-		return;
-	}
-	// Only the visible screen (plus one block either side, so edge blocks are
-	// whole) is filtered, which keeps long pages cheap
-	p.filter.setAttribute('x', String(-size));
-	p.filter.setAttribute('y', String(-size));
-	p.filter.setAttribute('width', String(window.innerWidth + 2 * size));
-	p.filter.setAttribute('height', String(window.innerHeight + 2 * size));
-	setBlock(p, size, blur);
 	if (background) root.style.backgroundColor = background;
 	el.style.filter = `url(#${FILTER_ID})`;
 }
 
-/** Animate an element's block size and blur; resolves when finished */
-export function pixelate(el: HTMLElement, opts: PixelateOptions): Promise<void> {
-	const { from, to, blurFrom = 0, blurTo = 0, duration, background } = opts;
+const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+
+/** Animate the dissolve between two strengths; resolves when finished */
+export function dissolve(
+	el: HTMLElement,
+	opts: { from: number; to: number; duration: number; background?: string }
+): Promise<void> {
+	const { from, to, duration, background } = opts;
 	return new Promise((resolve) => {
 		const start = performance.now();
 		const frame = (now: number) => {
 			const t = Math.min((now - start) / duration, 1);
-			const e = easeInOut(t);
-			setPixelated(el, Math.round(from + (to - from) * e), blurFrom + (blurTo - blurFrom) * e, background);
+			setDissolve(el, from + (to - from) * easeInOut(t), background);
 			if (t < 1) requestAnimationFrame(frame);
 			else resolve();
 		};

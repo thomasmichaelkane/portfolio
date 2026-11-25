@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { page } from '$app/state';
-  import { pixelate, setPixelated, PIXEL_MAX } from '$lib/utils/pixelate';
+  import { dissolve, setDissolve } from '$lib/utils/pixelate';
   import type { PageData } from './$types';
   import { copyTextStore } from '$lib/utils/copy';
   import { downloadFile } from '$lib/utils/download';
@@ -22,18 +22,18 @@
     copyTextStore.cleanup();
   });
 
-  // Arriving from the home page's pixelate transition: start as blocks and sharpen.
+  // Arriving from the home page's pixel dissolve: start fully dissolved and clear.
   // Hidden until the filter is applied so the page never flashes sharp first.
-  const PIXEL_IN = 650; // ms
+  const DISSOLVE_IN = 900; // ms
   let pageEl: HTMLElement;
   let hidden = page.state.pixelIn === true;
 
   onMount(() => {
     if (!hidden) return;
     const background = 'var(--color-lbackground)';
-    setPixelated(pageEl, PIXEL_MAX, 3, background);
+    setDissolve(pageEl, 1, background);
     hidden = false;
-    pixelate(pageEl, { from: PIXEL_MAX, to: 1, blurFrom: 3, duration: PIXEL_IN, background });
+    dissolve(pageEl, { from: 1, to: 0, duration: DISSOLVE_IN, background });
   });
 </script>
 

@@ -4,7 +4,7 @@
   import { page } from '$app/state';
   import HomeLink from '$lib/components/elements/HomeLink.svelte';
   import { drawShimmer } from '$lib/utils/shimmer';
-  import { pixelate, PIXEL_MAX } from '$lib/utils/pixelate';
+  import { dissolve } from '$lib/utils/pixelate';
 
   // Timings for the hand-off to /apps, in ms
   const OTHERS_FADE = 250; // name and other links fade out
@@ -12,7 +12,7 @@
   const APPS_FADE = 1200; // ...then fades out while the dots fade in
   const ARRIVE_FADE = 900; // content fading back in when returning from /apps
 
-  const PIXEL_OUT = 550; // pixelate out to /about, ms
+  const DISSOLVE_OUT = 700; // pixel-dissolve out to /about, ms
 
   let leaving = $state(false);
   let pixelating = false;
@@ -54,13 +54,7 @@
     e.preventDefault();
     if (leaving || pixelating) return;
     pixelating = true;
-    await pixelate(mainEl, {
-      from: 1,
-      to: PIXEL_MAX,
-      blurTo: 3,
-      duration: PIXEL_OUT,
-      background: 'var(--color-apps-bg)'
-    });
+    await dissolve(mainEl, { from: 0, to: 1, duration: DISSOLVE_OUT, background: 'var(--color-apps-bg)' });
     goto('/about', { state: { pixelIn: true } });
   }
 
