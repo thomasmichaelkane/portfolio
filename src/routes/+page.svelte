@@ -34,7 +34,7 @@
 <div class="text-dtext font-serif">
 
   <!-- Home -->
-  <section class="h-screen bg-lbackground" id="home">
+  <section class="min-h-svh bg-lbackground" id="home">
     <StickyHeader
       sectionName="Home"
       headerColor="primary"
@@ -44,9 +44,9 @@
     />
 
     <div class="flex-1 overflow-y-auto px-4 py-6">
-      <div class="pt-24 text-center md:pt-40">
-        <h1 class="mb-6 text-5xl font-bold md:text-8xl">{info.myName}</h1>
-        <p class="mb-8 text-3xl md:text-6xl">{info.myTagline}</p>
+      <div class="pt-24 text-center md:pt-40 short:pt-10">
+        <h1 class="mb-6 text-5xl font-bold md:text-8xl short:mb-3 short:text-6xl">{info.myName}</h1>
+        <p class="mb-8 text-3xl md:text-6xl short:mb-4 short:text-4xl">{info.myTagline}</p>
         <Icons {info} />
       </div>
     </div>
@@ -66,7 +66,7 @@
               {info.myBio}
             </p>
           </div>
-          <div class="p-3 text-lg space-y-3 font-mono break-words md:text-2xl">
+          <div class="p-3 text-lg space-y-3 font-mono break-words lg:text-2xl">
             <p>email: {info.myEmail}</p>
             <p>location: London</p>
           </div>

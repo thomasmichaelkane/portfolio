@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* short viewports, e.g. phones in landscape */
+@custom-variant short (@media (max-height: 500px));
+
 @theme {
 
   /* colors */
