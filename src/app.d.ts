@@ -6,14 +6,8 @@ declare global {
 		// interface Locals {}
 		// interface PageData {}
 		interface PageState {
-			/** Set when arriving at /apps via the home page transition */
+			/** Set when arriving at /apps or /about via the home page's transition */
 			fromHome?: boolean;
-			/** Set when arriving at / via the /apps home link transition */
-			fromApps?: boolean;
-			/** Set when arriving at /about via the home page fade */
-			fadeIn?: boolean;
-			/** Set when arriving at / via the /about home icon fade */
-			fromAbout?: boolean;
 		}
 		// interface Platform {}
 	}

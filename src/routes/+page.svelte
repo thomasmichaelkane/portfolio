@@ -48,8 +48,7 @@
     if (leavingTo) return;
     leavingTo = to;
     if (to === 'apps') runDots();
-    const state = to === 'apps' ? { fromHome: true } : { fadeIn: true };
-    setTimeout(() => goto(`/${to}`, { state }), CHOSEN_HOLD + CHOSEN_FADE);
+    setTimeout(() => goto(`/${to}`, { state: { fromHome: true } }), CHOSEN_HOLD + CHOSEN_FADE);
   }
 
   // The clicked link lingers and fades slowly; everything else fades quickly
@@ -99,7 +98,7 @@
     </h1>
 
     <nav class="flex gap-12 text-3xl md:gap-16 md:text-4xl">
-      {#each ['about', 'apps'] as const as link}
+      {#each ['about', 'apps'] as const as link (link)}
         <a
           href="/{link}"
           onclick={(e) => leave(e, link)}

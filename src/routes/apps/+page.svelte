@@ -21,7 +21,7 @@
     e.preventDefault();
     if (leaving) return;
     leaving = true;
-    setTimeout(() => goto('/', { state: { fromApps: true } }), FADE_OUT + GAP);
+    setTimeout(() => goto('/'), FADE_OUT + GAP);
   }
 </script>
 

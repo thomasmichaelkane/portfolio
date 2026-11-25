@@ -29,7 +29,7 @@
   const TEXT_FADE = 300; // ms
   const BAR_SLIDE = 400; // ms
   const FADE_OUT = 900; // ms, going back home
-  let stage = page.state.fadeIn === true ? 0 : 4;
+  let stage = page.state.fromHome === true ? 0 : 4;
   let leaving = false;
 
   // Hold the page behind at the home page's grey while fading, so nothing flashes white
@@ -83,7 +83,7 @@
     if (leaving) return;
     leaving = true;
     holdDarkBackground(true);
-    setTimeout(() => goto('/', { state: { fromAbout: true } }), FADE_OUT);
+    setTimeout(() => goto('/'), FADE_OUT);
   }
 </script>
 
@@ -189,7 +189,7 @@
     <div class="px-2 pt-10 pb-20 md:px-4 md:pt-16 md:pb-35">
       <div class="mx-auto max-w-7xl px-4">
         <div class="grid gap-8">
-          {#each projects as project}
+          {#each projects as project (project.id)}
             <Project 
               name={project.name}
               description={project.description}

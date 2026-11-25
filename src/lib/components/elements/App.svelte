@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
+
   interface Props {
     name: string;
     logoSrc: string;
@@ -21,20 +23,25 @@
     clearTimeout(tapTimer);
     tapTimer = setTimeout(() => (tapped = false), TAP_SHOW);
   }
+  onDestroy(() => clearTimeout(tapTimer));
+
+  // Keyboard focus ring around the logo (not shown for mouse or touch)
+  const focusRing =
+    'rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-500';
 </script>
 
 {#snippet logo()}
   <img src={logoSrc} alt="" draggable="false" class="h-20 w-20 rounded-2xl md:h-36 md:w-36" />
 {/snippet}
 
-<div class="relative flex w-20 flex-col items-center md:w-36">
+<div class="flex w-20 flex-col items-center md:w-36">
   {#if playStoreUrl}
     <a
       href={playStoreUrl}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="{name} on Google Play"
-      class="block rounded-2xl"
+      class="block {focusRing}"
     >
       {@render logo()}
     </a>
@@ -43,19 +50,11 @@
     <button
       type="button"
       aria-label="{name}, coming soon"
-      class="block cursor-default rounded-2xl outline-none"
+      class="block cursor-default {focusRing}"
       onclick={onTap}
     >
       {@render logo()}
     </button>
-
-    <p
-      class="soon pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 font-fraunces text-sm whitespace-nowrap text-neutral-300 lowercase transition-opacity duration-300 md:-top-11 md:text-base"
-      class:opacity-0={!(active || tapped)}
-      aria-hidden="true"
-    >
-      coming soon
-    </p>
   {/if}
 
   <!-- Soft-edged patch of the page colour behind the name, so it reads over the dots -->
@@ -66,6 +65,17 @@
   >
     {name}
   </p>
+
+  {#if !playStoreUrl}
+    <!-- Below the name, in the layout, so the app's size accounts for it while shown -->
+    <p
+      class="soon -mt-1 rounded-full px-3 py-1 font-fraunces text-sm whitespace-nowrap text-neutral-300 lowercase transition-opacity duration-300 md:mt-0 md:text-base"
+      class:opacity-0={!(active || tapped)}
+      aria-hidden="true"
+    >
+      coming soon
+    </p>
+  {/if}
 </div>
 
 <style>
