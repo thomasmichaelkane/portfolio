@@ -14,12 +14,12 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const BLOCK = 4; // page pixel size at full strength, in px
 const BLUR = 9; // blur at full strength, in px
 const SPECKLE_BLOCK = 3; // speckle size, in px
-const SPECKLE_DENSITY = 0.3; // share of speckle cells filled at full strength
+const SPECKLE_DENSITY = 0.07; // share of speckle cells filled at full strength
 const SPECKLE_ALPHA = 0.35; // maximum speckle opacity
 const SPECKLE_SATURATION = [0.12, 0.28]; // muted, so they sit in the grey
 const SPECKLE_LIGHTNESS = [0.42, 0.6];
 const SPECKLE_RAMP = 2; // >1 makes speckles build up slowly, then come in at the end
-const SPECKLE_FPS = 24; // how often the speckles re-scatter
+const SPECKLE_FPS = 8; // how often the speckles re-scatter (lower = calmer)
 
 // ---- Pixelate filter --------------------------------------------------------
 
