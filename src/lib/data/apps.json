@@ -1,16 +1,16 @@
 {
-  "apps": [
-    {
-      "name": "Hestia",
-      "logoSrc": "/apps/hestia-logo.svg",
-      "playStoreUrl": null,
-      "accent": "#C98A5E"
-    },
-    {
-      "name": "Deadwax",
-      "logoSrc": "/apps/deadwax-logo.svg",
-      "playStoreUrl": null,
-      "accent": "#F6C1CC"
-    }
-  ]
+	"apps": [
+		{
+			"name": "Hestia",
+			"logoSrc": "/apps/hestia-logo.svg",
+			"playStoreUrl": null,
+			"accent": "#C98A5E"
+		},
+		{
+			"name": "Deadwax",
+			"logoSrc": "/apps/deadwax-logo.svg",
+			"playStoreUrl": null,
+			"accent": "#F6C1CC"
+		}
+	]
 }

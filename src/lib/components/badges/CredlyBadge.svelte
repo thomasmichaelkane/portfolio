@@ -1,24 +1,18 @@
 <script lang="ts">
-  export let badgeId: string;
-  export let imageSrc: string;
-  export let alt: string = 'Badge';
-  export let width: number = 150;
-  export let height: number = 150;
+	export let badgeId: string;
+	export let imageSrc: string;
+	export let alt: string = 'Badge';
+	export let width: number = 150;
+	export let height: number = 150;
 
-  $: badgeUrl = `https://www.credly.com/badges/${badgeId}`;
+	$: badgeUrl = `https://www.credly.com/badges/${badgeId}`;
 </script>
 
-<a 
-  href={badgeUrl} 
-  target="_blank" 
-  rel="noopener noreferrer" 
-  class="inline-block transition-transform duration-200 ease-in-out hover:scale-110"
+<a
+	href={badgeUrl}
+	target="_blank"
+	rel="noopener noreferrer"
+	class="inline-block transition-transform duration-200 ease-in-out hover:scale-110"
 >
-  <img
-    src={imageSrc}
-    {alt}
-    width={width}
-    height={height}
-    class="rounded-lg w-24 h-auto sm:w-[150px]"
-  />
+	<img src={imageSrc} {alt} {width} {height} class="h-auto w-24 rounded-lg sm:w-[150px]" />
 </a>

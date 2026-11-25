@@ -2,85 +2,84 @@ import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 interface TooltipPosition {
-  x: number;
-  y: number;
+	x: number;
+	y: number;
 }
 
 interface CopyTextState {
-  copied: boolean;
-  tooltipPosition: TooltipPosition;
+	copied: boolean;
+	tooltipPosition: TooltipPosition;
 }
 
 function createCopyTextStore() {
-  const { subscribe, set, update } = writable<CopyTextState>({
-    copied: false,
-    tooltipPosition: { x: 0, y: 0 }
-  });
+	const { subscribe, update } = writable<CopyTextState>({
+		copied: false,
+		tooltipPosition: { x: 0, y: 0 }
+	});
 
-  let mouseMoveHandler: ((event: MouseEvent) => void) | null = null;
-  let timeoutId: number | null = null;
+	let mouseMoveHandler: ((event: MouseEvent) => void) | null = null;
+	let timeoutId: number | null = null;
 
-  const updateTooltipPosition = (event: MouseEvent) => {
-    update(state => ({
-      ...state,
-      tooltipPosition: { x: event.clientX, y: event.clientY }
-    }));
-  };
+	const updateTooltipPosition = (event: MouseEvent) => {
+		update((state) => ({
+			...state,
+			tooltipPosition: { x: event.clientX, y: event.clientY }
+		}));
+	};
 
-  const startMouseTracking = () => {
-    if (!browser) return;
-    
-    mouseMoveHandler = updateTooltipPosition;
-    window.addEventListener('mousemove', mouseMoveHandler);
-  };
+	const startMouseTracking = () => {
+		if (!browser) return;
 
-  const stopMouseTracking = () => {
-    if (!browser || !mouseMoveHandler) return;
-    
-    window.removeEventListener('mousemove', mouseMoveHandler);
-    mouseMoveHandler = null;
-  };
+		mouseMoveHandler = updateTooltipPosition;
+		window.addEventListener('mousemove', mouseMoveHandler);
+	};
 
-  const copyToClipboard = async (email: string, duration: number = 5000) => {
-    if (!browser) return;
+	const stopMouseTracking = () => {
+		if (!browser || !mouseMoveHandler) return;
 
-    try {
-      await navigator.clipboard.writeText(email);
-      
-      // Start tracking mouse and show tooltip
-      startMouseTracking();
-      update(state => ({ ...state, copied: true }));
+		window.removeEventListener('mousemove', mouseMoveHandler);
+		mouseMoveHandler = null;
+	};
 
-      // Clear any existing timeout
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+	const copyToClipboard = async (email: string, duration: number = 5000) => {
+		if (!browser) return;
 
-      // Hide tooltip after duration
-      timeoutId = window.setTimeout(() => {
-        stopMouseTracking();
-        update(state => ({ ...state, copied: false }));
-        timeoutId = null;
-      }, duration);
+		try {
+			await navigator.clipboard.writeText(email);
 
-    } catch (err) {
-      console.error('Failed to copy email:', err);
-    }
-  };
+			// Start tracking mouse and show tooltip
+			startMouseTracking();
+			update((state) => ({ ...state, copied: true }));
 
-  const cleanup = () => {
-    stopMouseTracking();
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      timeoutId = null;
-    }
-  };
+			// Clear any existing timeout
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
 
-  return {
-    subscribe,
-    copyToClipboard,
-    cleanup
-  };
+			// Hide tooltip after duration
+			timeoutId = window.setTimeout(() => {
+				stopMouseTracking();
+				update((state) => ({ ...state, copied: false }));
+				timeoutId = null;
+			}, duration);
+		} catch (err) {
+			console.error('Failed to copy email:', err);
+		}
+	};
+
+	const cleanup = () => {
+		stopMouseTracking();
+		if (timeoutId) {
+			clearTimeout(timeoutId);
+			timeoutId = null;
+		}
+	};
+
+	return {
+		subscribe,
+		copyToClipboard,
+		cleanup
+	};
 }
 
 export const copyTextStore = createCopyTextStore();

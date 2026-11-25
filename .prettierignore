@@ -4,3 +4,6 @@ pnpm-lock.yaml
 yarn.lock
 bun.lock
 bun.lockb
+
+# Claude Code (including git worktrees, which are separate checkouts)
+.claude/

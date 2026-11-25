@@ -6,42 +6,41 @@
 /* Fraunces, the Hestia wordmark font (SIL OFL, see static/fonts/Fraunces-OFL.txt).
    Only downloaded on pages that use it. */
 @font-face {
-  font-family: 'Fraunces';
-  src: url('/fonts/fraunces.ttf') format('truetype');
-  font-weight: 100 900;
-  font-display: swap;
+	font-family: 'Fraunces';
+	src: url('/fonts/fraunces.ttf') format('truetype');
+	font-weight: 100 900;
+	font-display: swap;
 }
 
 @theme {
+	/* colors */
+	--color-primary: #ff6b6b;
+	--color-secondary: #43b3ab;
+	--color-tertiary: #0b7a55;
+	--color-quaternary: #64403e;
+	--color-lbackground: #f7f0f0;
+	--color-project: #e6e3dc;
+	--color-dtext: #201d1d;
+	--color-ltext: #f7f0f0ff;
+	--color-htext: #201d1d;
+	--color-cborder: #24292e;
 
-  /* colors */
-  --color-primary: #ff6b6b; 
-  --color-secondary: #43B3AB;
-  --color-tertiary: #0B7A55;
-  --color-quaternary: #64403e;
-  --color-lbackground: #f7f0f0;
-  --color-project: #e6e3dc;
-  --color-dtext: #201D1D;
-  --color-ltext: #f7f0f0ff;
-  --color-htext: #201D1D;
-  --color-cborder: #24292e;
+	/* brand colours */
+	--color-docker: #1d63ed;
+	--color-github: #24292e;
+	--color-site: #354f52;
 
-  /* brand colours */
-  --color-docker: #1D63ED;
-  --color-github: #24292e;
-  --color-site: #354F52;
+	/* dark background: landing and apps pages, and the fades between pages */
+	--color-apps-bg: #161616;
 
-  /* dark background: landing and apps pages, and the fades between pages */
-  --color-apps-bg: #161616;
-
-  /* fonts */
-  --font-serif: 'Lora', serif; 
-  --font-mono: 'Share Tech Mono', monospace; 
-  --font-fraunces: 'Fraunces', serif;
+	/* fonts */
+	--font-serif: 'Lora', serif;
+	--font-mono: 'Share Tech Mono', monospace;
+	--font-fraunces: 'Fraunces', serif;
 }
 
 /* @theme { */
-  /* --color-primary: #c37397;
+/* --color-primary: #c37397;
   --color-secondary: #c5afc3;
   --color-tertiary: #ae9290;
   --color-quaternary: #ff9290;

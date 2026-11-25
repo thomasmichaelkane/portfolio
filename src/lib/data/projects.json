@@ -1,44 +1,44 @@
 {
-  "projects": [
-    {
-      "id": "project-1",
-      "name": "enigma-cli",
-      "description": "An enigma machine simulation with full functionality written in pure Rust. The plugboard wiring, typing, and rotor movement are all animated in the terminal using ASCII art.",
-      "imageName": "enigma.png",
-      "techStack": ["Rust", "Docker"],
-      "githubUrl": "https://github.com/thomasmichaelkane/enigma_cli",
-      "buttonType": "docker",
-      "buttonLink": "docker run -it t0mmyk/enigma-cli"
-    },
-        {
-      "id": "project-2",
-      "name": "haystack",
-      "description": "Finding seemingly indistinguishable cells in 3D image stacks using pre trained models and k means clustering.",
-      "imageName": "haystack.png",
-      "techStack": ["Python", "OpenCV", "scikit-learn", "Cellpose"],
-      "githubUrl": "https://github.com/thomasmichaelkane/haystack",
-      "buttonType": null,
-      "buttonLink": "#"
-    },
-    {
-      "id": "project-3",
-      "name": "Ventr",
-      "description": "Venture capital investors pairwise ranking potential companies to see company wide preferences using an Elo ranking system.",
-      "imageName": "ventr.png",
-      "techStack": ["Python", "FastAPI", "PyDantic", "SvelteKit", "TailwindCSS"],
-      "githubUrl": "https://github.com/thomasmichaelkane/ventr",
-      "buttonType": null,
-      "buttonLink": "#"
-    },
-    {
-      "id": "project-4",
-      "name": "Portfolio 2.0",
-      "description": "This website! - My second portfolio site built for fun using Sveltekit.",
-      "imageName": "tomkane.png",
-      "techStack": ["TypeScript", "SvelteKit", "Vite", "TailwindCSS"],
-      "githubUrl": "https://github.com/thomasmichaelkane/portfolio",
-      "buttonType": null,
-      "buttonLink": "#"
-    }
-  ]
+	"projects": [
+		{
+			"id": "project-1",
+			"name": "enigma-cli",
+			"description": "An enigma machine simulation with full functionality written in pure Rust. The plugboard wiring, typing, and rotor movement are all animated in the terminal using ASCII art.",
+			"imageName": "enigma.png",
+			"techStack": ["Rust", "Docker"],
+			"githubUrl": "https://github.com/thomasmichaelkane/enigma_cli",
+			"buttonType": "docker",
+			"buttonLink": "docker run -it t0mmyk/enigma-cli"
+		},
+		{
+			"id": "project-2",
+			"name": "haystack",
+			"description": "Finding seemingly indistinguishable cells in 3D image stacks using pre trained models and k means clustering.",
+			"imageName": "haystack.png",
+			"techStack": ["Python", "OpenCV", "scikit-learn", "Cellpose"],
+			"githubUrl": "https://github.com/thomasmichaelkane/haystack",
+			"buttonType": null,
+			"buttonLink": "#"
+		},
+		{
+			"id": "project-3",
+			"name": "Ventr",
+			"description": "Venture capital investors pairwise ranking potential companies to see company wide preferences using an Elo ranking system.",
+			"imageName": "ventr.png",
+			"techStack": ["Python", "FastAPI", "PyDantic", "SvelteKit", "TailwindCSS"],
+			"githubUrl": "https://github.com/thomasmichaelkane/ventr",
+			"buttonType": null,
+			"buttonLink": "#"
+		},
+		{
+			"id": "project-4",
+			"name": "Portfolio 2.0",
+			"description": "This website! - My second portfolio site built for fun using Sveltekit.",
+			"imageName": "tomkane.png",
+			"techStack": ["TypeScript", "SvelteKit", "Vite", "TailwindCSS"],
+			"githubUrl": "https://github.com/thomasmichaelkane/portfolio",
+			"buttonType": null,
+			"buttonLink": "#"
+		}
+	]
 }
