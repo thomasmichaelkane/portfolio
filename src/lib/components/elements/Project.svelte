@@ -23,7 +23,7 @@
         alt={name}
         class="w-full h-48 aspect-square sm:h-full object-cover"
       />
-      <div class="absolute inset-0 bg-ctextbg-opacity-20 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+      <div class="absolute inset-0 bg-ctext/20 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
     </div>
     
     <!-- Project Content -->
